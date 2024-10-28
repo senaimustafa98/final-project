@@ -1,11 +1,10 @@
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { View, Text, TextInput, Alert, StyleSheet } from 'react-native';
+import { colors } from '../../constants/colors';
+import CustomButton from '../../components/CustomButton';
+import { Link } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { colors } from './constants/colors';
-import { useFonts, Inter_400Regular } from '@expo-google-fonts/inter'
-import { View, Text, TextInput, Button, StyleSheet, Alert, TouchableOpacity } from 'react-native';
-import { useState } from 'react';
-import CustomButton from './components/CustomButton';
-
-
 
 const styles = StyleSheet.create({
   container: {
@@ -13,11 +12,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  text:{
-    color: colors.text,
-    fontSize: 20,
-    fontFamily: "Inter_400Regular",
+    padding: 20,
   },
   title: {
     fontSize: 24,
@@ -33,19 +28,28 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 5,
     marginBottom: 25,
+    paddingHorizontal: 10,
+    fontSize: 16,
     color: colors.text,
+    backgroundColor:'skyblue',
     textAlign: 'center',
   },
   loginText: {
     marginTop: 15,
     color: 'orange',
     textAlign: 'center',
+    fontSize: 16,
   },
-
+  goBackText: {
+    marginTop: 15,
+    color: 'white',
+    textAlign: 'center',
+    fontSize: 16,
+  },
 });
 
-
-const SignUp = ({ navigation }: { navigation: any }) => {
+const SignUp = () => {
+  const router = useRouter(); // Go back button
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
@@ -60,9 +64,7 @@ const SignUp = ({ navigation }: { navigation: any }) => {
       Alert.alert('Passwords do not match');
       return;
     }
-    // ACcount created
     Alert.alert('Account created successfully!');
-    navigation.navigate('Login');
   };
 
   return (
@@ -77,7 +79,7 @@ const SignUp = ({ navigation }: { navigation: any }) => {
         keyboardType="email-address"
         autoCapitalize="none"
       />
-        <TextInput
+      <TextInput
         style={styles.input}
         placeholder="Username"
         placeholderTextColor={colors.placeholder}
@@ -102,9 +104,13 @@ const SignUp = ({ navigation }: { navigation: any }) => {
         secureTextEntry
       />
       <CustomButton title="Register" onPress={handleSignUp} />
-      <Text style={styles.loginText} onPress={() => navigation.navigate('Login')}>
+      <Link href="/login" style={styles.loginText}>
         Already have an account? Login
+      </Link>
+      <Text style={styles.goBackText} onPress={() => router.back()}>
+        Go Back
       </Text>
+      <StatusBar style="light" />
     </View>
   );
 };
