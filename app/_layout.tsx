@@ -1,14 +1,3 @@
-/*
-import { Stack } from 'expo-router';
-
-export default function RootLayout() {
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-    </Stack>
-  );
-}
- */
-// app/_layout.tsx
 import React from 'react';
 import { Tabs, useSegments } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
