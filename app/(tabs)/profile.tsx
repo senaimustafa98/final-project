@@ -3,7 +3,6 @@ import { View, Text, Image, StyleSheet, Button } from 'react-native';
 import { colors } from '../../constants/colors';
 import { useRouter } from 'expo-router';
 
-
 const UserProfile = () => {
   const router = useRouter();
   return (
@@ -31,7 +30,11 @@ const UserProfile = () => {
           <Button title="Edit Profile" onPress={() => {}} color="#007aff" />
         </View>
         <View style={styles.buttonWrapper}>
-        <Button title="Logout" onPress={() => router.push('/(auth)/login')} color="red" />
+          <Button
+            title="Logout"
+            onPress={() => router.push('/(auth)/login')}
+            color="red"
+          />
         </View>
       </View>
     </View>

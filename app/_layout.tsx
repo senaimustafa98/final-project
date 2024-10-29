@@ -13,7 +13,9 @@ export default function RootLayout() {
       screenOptions={{
         tabBarActiveTintColor: '#007aff',
         headerShown: false,
-        tabBarStyle: isAuthScreen ? { display: 'none' } : { backgroundColor: 'rgba(0, 0, 0, 0.8)' },
+        tabBarStyle: isAuthScreen
+          ? { display: 'none' }
+          : { backgroundColor: 'rgba(0, 0, 0, 0.8)' },
       }}
     >
       <Tabs.Screen
@@ -43,12 +45,27 @@ export default function RootLayout() {
           ),
         }}
       />
-      <Tabs.Screen name="(tabs)/start-workout" options={{ tabBarItemStyle: { display: 'none' } }} />
-      <Tabs.Screen name="(tabs)/start-workout-template" options={{ tabBarItemStyle: { display: 'none' } }} />
+      <Tabs.Screen
+        name="(tabs)/start-workout"
+        options={{ tabBarItemStyle: { display: 'none' } }}
+      />
+      <Tabs.Screen
+        name="(tabs)/start-workout-template"
+        options={{ tabBarItemStyle: { display: 'none' } }}
+      />
 
-       <Tabs.Screen name="(auth)/login" options={{ tabBarItemStyle: { display: 'none' } }} />
-       <Tabs.Screen name="(auth)/signup" options={{ tabBarItemStyle: { display: 'none' } }} />
-       <Tabs.Screen name="(auth)/index" options={{ tabBarItemStyle: { display: 'none' } }} />
+      <Tabs.Screen
+        name="(auth)/login"
+        options={{ tabBarItemStyle: { display: 'none' } }}
+      />
+      <Tabs.Screen
+        name="(auth)/signup"
+        options={{ tabBarItemStyle: { display: 'none' } }}
+      />
+      <Tabs.Screen
+        name="(auth)/index"
+        options={{ tabBarItemStyle: { display: 'none' } }}
+      />
     </Tabs>
   );
 }

@@ -5,7 +5,9 @@ const History = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Workout History</Text>
-      <Text style={styles.content}>Here you can view your previous workouts.</Text>
+      <Text style={styles.content}>
+        Here you can view your previous workouts.
+      </Text>
     </View>
   );
 };

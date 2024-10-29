@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     fontSize: 16,
     color: colors.text,
-    backgroundColor:'skyblue',
+    backgroundColor: 'skyblue',
     textAlign: 'center',
   },
   loginText: {
