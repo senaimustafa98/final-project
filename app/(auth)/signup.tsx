@@ -107,7 +107,7 @@ const SignUp = () => {
       <Link href="/login" style={styles.loginText}>
         Already have an account? Login
       </Link>
-      <Text style={styles.goBackText} onPress={() => router.back()}>
+      <Text style={styles.goBackText} onPress={() => router.push('/(auth)')}>
         Go Back
       </Text>
       <StatusBar style="light" />

@@ -90,7 +90,7 @@ const Login = () => {
       <Link href="/signup" style={styles.registerText}>
         Don’t have an account? Register
       </Link>
-      <Text style={styles.goBackText} onPress={() => router.back()}>
+      <Text style={styles.goBackText} onPress={() => router.push('/(auth)')}>
         Go Back
       </Text>
     </View>
