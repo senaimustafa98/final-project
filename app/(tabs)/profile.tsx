@@ -31,9 +31,6 @@ const UserProfile = () => {
           <Button title="Edit Profile" onPress={() => {}} color="#007aff" />
         </View>
         <View style={styles.buttonWrapper}>
-          <Button title="Settings" onPress={() => {}} color="#007aff" />
-        </View>
-        <View style={styles.buttonWrapper}>
         <Button title="Logout" onPress={() => router.push('/(auth)/login')} color="red" />
         </View>
       </View>

@@ -43,6 +43,9 @@ export default function RootLayout() {
           ),
         }}
       />
+      <Tabs.Screen name="(tabs)/start-workout" options={{ tabBarItemStyle: { display: 'none' } }} />
+      <Tabs.Screen name="(tabs)/start-workout-template" options={{ tabBarItemStyle: { display: 'none' } }} />
+
        <Tabs.Screen name="(auth)/login" options={{ tabBarItemStyle: { display: 'none' } }} />
        <Tabs.Screen name="(auth)/signup" options={{ tabBarItemStyle: { display: 'none' } }} />
        <Tabs.Screen name="(auth)/index" options={{ tabBarItemStyle: { display: 'none' } }} />

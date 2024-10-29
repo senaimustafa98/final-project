@@ -1,11 +1,26 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
+import { colors } from '../../constants/colors';
 
 const Workout = () => {
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Workout</Text>
-      <Text style={styles.content}>Start a new workout or choose a workout template.</Text>
+      <Text style={styles.title}>Workout Options</Text>
+      <TouchableOpacity
+        style={styles.optionButton}
+        onPress={() => router.push('/(tabs)/start-workout')}
+      >
+        <Text style={styles.optionText}>Start Workout</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.optionButton}
+        onPress={() => router.push('/(tabs)/start-workout-template')}
+      >
+        <Text style={styles.optionText}>Start Workout from Template</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -16,18 +31,27 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#1c1c1e',
+    backgroundColor: colors.background,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 20,
+    color: colors.text,
+    marginBottom: 30,
   },
-  content: {
-    fontSize: 16,
-    color: '#d3d3d3',
-    textAlign: 'center',
+  optionButton: {
+    backgroundColor: 'skyblue',
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+    borderRadius: 10,
+    marginVertical: 10,
+    width: '80%',
+    alignItems: 'center',
+  },
+  optionText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: 'white',
   },
 });
 
