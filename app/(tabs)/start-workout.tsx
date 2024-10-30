@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginVertical: 10,
   },
-  exerciseGif: { width: 80, height: 80, resizeMode: 'contain' },
+  exerciseGif: { width: 80, height: 80, resizeMode: 'contain', alignSelf: 'flex-start', marginRight: 10 },
   inputContainer: { flex: 1, marginLeft: 10 },
   inputRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 5 },
   setContainer: { marginBottom: 5 },
