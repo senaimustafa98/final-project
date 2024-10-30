@@ -2,7 +2,7 @@ export const exercises = [
   {
     bodyPart: 'upper legs',
     equipment: 'barbell',
-    gifUrl: 'https://example.com/squat.gif',
+    gifUrl: 'https://via.placeholder.com/80',
     id: '001',
     name: 'barbell squat',
     target: 'quadriceps',

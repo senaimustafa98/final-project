@@ -7,16 +7,22 @@ import {
   Modal,
   FlatList,
   ScrollView,
+  TextInput,
+  Image,
 } from 'react-native';
 import { exercises } from '../../database/Exercises';
+
+type SelectedExercise = (typeof exercises)[0] & {
+  sets: { reps: number; weight: number }[];
+};
 
 const StartWorkout = () => {
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [showExerciseList, setShowExerciseList] = useState(false);
   const [selectedExercises, setSelectedExercises] = useState<
-    (typeof exercises)[0][]
-  >([]); // Store multiple exercises
+    SelectedExercise[]
+  >([]);
 
   useEffect(() => {
     if (isRunning) {
@@ -44,7 +50,11 @@ const StartWorkout = () => {
   const handleAddExercise = () => setShowExerciseList(true);
 
   const handleSelectExercise = (exercise: (typeof exercises)[0]) => {
-    setSelectedExercises((prevExercises) => [...prevExercises, exercise]); // Add exercise to the list
+    const newExercise: SelectedExercise = {
+      ...exercise,
+      sets: [{ reps: 0, weight: 0 }],
+    };
+    setSelectedExercises((prevExercises) => [...prevExercises, newExercise]);
     setShowExerciseList(false);
   };
 
@@ -54,56 +64,163 @@ const StartWorkout = () => {
     );
   };
 
+  const addSet = (exerciseIndex: number) => {
+    setSelectedExercises((prevExercises) =>
+      prevExercises.map((exercise, i) =>
+        i === exerciseIndex
+          ? { ...exercise, sets: [...exercise.sets, { reps: 0, weight: 0 }] }
+          : exercise,
+      ),
+    );
+  };
+
+  const handleSetChange = (
+    exerciseIndex: number,
+    setIndex: number,
+    field: 'reps' | 'weight',
+    value: number,
+  ) => {
+    setSelectedExercises((prevExercises) =>
+      prevExercises.map((exercise, i) =>
+        i === exerciseIndex
+          ? {
+              ...exercise,
+              sets: exercise.sets.map((set, j) =>
+                j === setIndex ? { ...set, [field]: value } : set,
+              ),
+            }
+          : exercise,
+      ),
+    );
+  };
+
+  const handleRemoveSet = (exerciseIndex: number, setIndex: number) => {
+    setSelectedExercises((prevExercises) =>
+      prevExercises.map((exercise, i) =>
+        i === exerciseIndex
+          ? {
+              ...exercise,
+              sets: exercise.sets.filter((_, j) => j !== setIndex),
+            }
+          : exercise,
+      ),
+    );
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Workout Timer</Text>
-      <Text style={styles.timer}>{formatTime(seconds)}</Text>
+      <View style={styles.timerContainer}>
+        <Text style={styles.title}>Workout Timer</Text>
+        <Text style={styles.timer}>{formatTime(seconds)}</Text>
 
-      <View style={styles.buttonContainer}>
-        {!isRunning ? (
-          <TouchableOpacity style={styles.button} onPress={handleStart}>
-            <Text style={styles.buttonText}>Start</Text>
+        <View style={styles.buttonContainer}>
+          {!isRunning ? (
+            <TouchableOpacity style={styles.button} onPress={handleStart}>
+              <Text style={styles.buttonText}>Start</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.button} onPress={handlePause}>
+              <Text style={styles.buttonText}>Pause</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity style={styles.button} onPress={handleReset}>
+            <Text style={styles.buttonText}>Reset</Text>
           </TouchableOpacity>
-        ) : (
-          <TouchableOpacity style={styles.button} onPress={handlePause}>
-            <Text style={styles.buttonText}>Pause</Text>
-          </TouchableOpacity>
-        )}
-        <TouchableOpacity style={styles.button} onPress={handleReset}>
-          <Text style={styles.buttonText}>Reset</Text>
-        </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Add Exercise Button */}
-      <TouchableOpacity
-        style={styles.addExerciseButton}
-        onPress={handleAddExercise}
-      >
-        <Text style={styles.buttonText}>Add Exercise</Text>
-      </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <TouchableOpacity
+          style={styles.addExerciseButton}
+          onPress={handleAddExercise}
+        >
+          <Text style={styles.buttonText}>Add Exercise</Text>
+        </TouchableOpacity>
 
-      {/* Display Selected Exercises */}
-      {selectedExercises.length > 0 && (
-        <View style={styles.selectedExercisesContainer}>
-          <Text style={styles.exerciseTitle}>Selected Exercises:</Text>
-          {selectedExercises.map((exercise, index) => (
-            <View key={index} style={styles.selectedExercise}>
-              <Text style={styles.exerciseName}>{exercise.name}</Text>
-              <Text style={styles.exerciseBodyPart}>
-                Target: {exercise.target}
-              </Text>
-              <Text style={styles.exerciseEquipment}>
-                Equipment: {exercise.equipment}
-              </Text>
-              <TouchableOpacity onPress={() => handleRemoveExercise(index)}>
-                <Text style={styles.removeButton}>Remove</Text>
-              </TouchableOpacity>
-            </View>
-          ))}
-        </View>
-      )}
+        {selectedExercises.length > 0 && (
+          <View style={styles.selectedExercisesContainer}>
+            <Text style={styles.exerciseTitle}>Current Workout:</Text>
+            {selectedExercises.map((exercise, exerciseIndex) => (
+              <View key={exerciseIndex} style={styles.selectedExercise}>
+                <Text style={styles.exerciseName}>{exercise.name}</Text>
 
-      {/* Exercise List Modal */}
+                <View style={styles.rowContainer}>
+                  <Image
+                    source={{ uri: exercise.gifUrl }}
+                    style={styles.exerciseGif}
+                  />
+                  <View style={styles.inputContainer}>
+                    {exercise.sets.map((set, setIndex) => (
+                      <View key={setIndex} style={styles.setContainer}>
+                        <Text style={styles.setLabel}>Set {setIndex + 1}</Text>
+
+                        <View style={styles.inputRow}>
+                          <Text style={styles.inputLabel}>Reps</Text>
+                          <TextInput
+                            style={styles.inputFullWidth}
+                            placeholder="Reps"
+                            keyboardType="numeric"
+                            value={set.reps.toString()}
+                            onChangeText={(value) =>
+                              handleSetChange(
+                                exerciseIndex,
+                                setIndex,
+                                'reps',
+                                parseInt(value) || 0,
+                              )
+                            }
+                          />
+                        </View>
+                        <View style={styles.inputRow}>
+                          <Text style={styles.inputLabel}>KG</Text>
+                          <TextInput
+                            style={styles.inputFullWidth}
+                            placeholder="KG"
+                            keyboardType="numeric"
+                            value={set.weight.toString()}
+                            onChangeText={(value) =>
+                              handleSetChange(
+                                exerciseIndex,
+                                setIndex,
+                                'weight',
+                                parseInt(value) || 0,
+                              )
+                            }
+                          />
+                        </View>
+                        <TouchableOpacity
+                          style={styles.removeSetButton}
+                          onPress={() =>
+                            handleRemoveSet(exerciseIndex, setIndex)
+                          }
+                        >
+                          <Text style={styles.buttonText}>Remove Set</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+
+                <View style={styles.buttonRow}>
+                  <TouchableOpacity
+                    style={styles.addSetButton}
+                    onPress={() => addSet(exerciseIndex)}
+                  >
+                    <Text style={styles.buttonText}>Add Set</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.removeButton}
+                    onPress={() => handleRemoveExercise(exerciseIndex)}
+                  >
+                    <Text style={styles.buttonText}>Remove Exercise</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+      </ScrollView>
+
       <Modal
         visible={showExerciseList}
         animationType="slide"
@@ -120,8 +237,7 @@ const StartWorkout = () => {
                   style={styles.exerciseItem}
                   onPress={() => handleSelectExercise(item)}
                 >
-                  <Text style={styles.exerciseText}>{item.name}</Text>
-                  <Text style={styles.exerciseBodyPart}>{item.bodyPart}</Text>
+                  <Text style={styles.exerciseItemText}>{item.name}</Text>
                 </TouchableOpacity>
               )}
             />
@@ -136,51 +252,99 @@ const StartWorkout = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#1c1c1e',
-  },
-  title: { fontSize: 24, fontWeight: 'bold', color: 'white', marginBottom: 20 },
+  container: { flex: 1, backgroundColor: '#1c1c1e' },
+  timerContainer: { alignItems: 'center', paddingVertical: 20 },
+  title: { fontSize: 24, fontWeight: 'bold', color: 'white', marginTop: 40 },
   timer: {
     fontSize: 48,
     fontWeight: 'bold',
     color: 'skyblue',
-    marginBottom: 30,
+    marginBottom: 10,
   },
-  buttonContainer: { flexDirection: 'row', marginBottom: '20%' },
+  buttonContainer: { flexDirection: 'row', marginBottom: 20 },
   button: {
     backgroundColor: 'skyblue',
     padding: 10,
-    borderRadius: 10,
+    borderRadius: 5,
     marginHorizontal: 10,
   },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: 'white',
-    textShadowColor: 'black',
+  buttonText: { fontSize: 13, fontWeight: 'bold', color: 'white' },
+  scrollContainer: {
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    paddingBottom: 80,
   },
   addExerciseButton: {
-    marginTop: 30,
     backgroundColor: '#ff914d',
-    paddingVertical: 15,
-    paddingHorizontal: 40,
+    padding: 15,
     borderRadius: 10,
+    marginBottom: 20,
   },
-  selectedExercisesContainer: { marginTop: 30, alignItems: 'center' },
+  selectedExercisesContainer: { width: '100%' },
   exerciseTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: 'white',
     marginBottom: 10,
   },
-  selectedExercise: { marginBottom: 15, alignItems: 'center' },
-  exerciseName: { fontSize: 18, color: 'white', marginBottom: 5 },
-  exerciseBodyPart: { fontSize: 16, color: 'gray', marginBottom: 5 },
-  exerciseEquipment: { fontSize: 16, color: 'gray', marginBottom: 5 },
-  removeButton: { color: 'red', marginTop: 5 },
+  selectedExercise: {
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  rowContainer: { flexDirection: 'row', alignItems: 'center', width: '100%' },
+  exerciseName: {
+    fontSize: 18,
+    color: 'white',
+    textAlign: 'center',
+    marginVertical: 10,
+  },
+  exerciseGif: { width: 80, height: 80, resizeMode: 'contain' },
+  inputContainer: { flex: 1, marginLeft: 10 },
+  inputRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 5 },
+  setContainer: { marginBottom: 5 },
+  setLabel: {
+    fontSize: 16,
+    color: 'white',
+    fontWeight: 'bold',
+    marginVertical: 5,
+  },
+  inputLabel: { fontSize: 16, color: 'white', marginRight: 10 },
+  inputFullWidth: {
+    flex: 1,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 5,
+    padding: 8,
+    textAlign: 'center',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 10,
+    width: '100%',
+  },
+  addSetButton: {
+    backgroundColor: '#007aff',
+    padding: 10,
+    borderRadius: 5,
+    flex: 0.45,
+    alignItems: 'center',
+  },
+  removeButton: {
+    backgroundColor: 'red',
+    padding: 10,
+    borderRadius: 5,
+    flex: 0.45,
+    alignItems: 'center',
+  },
+  removeSetButton: {
+    backgroundColor: 'orange',
+    padding: 8,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 5,
+  },
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -189,17 +353,17 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '80%',
-    padding: 20,
+    padding: 10,
     backgroundColor: '#ffffff',
     borderRadius: 10,
   },
-  modalTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
+  modalTitle: { fontSize: 20, fontWeight: 'bold' },
   exerciseItem: {
     padding: 10,
-    borderWidth: 1,
+    borderBottomWidth: 1,
     borderBottomColor: '#ccc',
   },
-  exerciseText: { fontSize: 18 },
+  exerciseItemText: { fontSize: 18 },
   closeButton: {
     marginTop: 10,
     color: 'blue',

@@ -15,7 +15,7 @@ export default function RootLayout() {
         headerShown: false,
         tabBarStyle: isAuthScreen
           ? { display: 'none' }
-          : { backgroundColor: 'rgba(0, 0, 0, 0.8)' },
+          : { backgroundColor: 'rgba(0, 0, 0, 0.9)', marginTop: 0 },
       }}
     >
       <Tabs.Screen
