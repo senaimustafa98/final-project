@@ -144,61 +144,60 @@ const StartWorkout = () => {
               <View key={exerciseIndex} style={styles.selectedExercise}>
                 <Text style={styles.exerciseName}>{exercise.name}</Text>
 
-                <View style={styles.rowContainer}>
-                  <Image
-                    source={{ uri: exercise.gifUrl }}
-                    style={styles.exerciseGif}
-                  />
-                  <View style={styles.inputContainer}>
-                    {exercise.sets.map((set, setIndex) => (
-                      <View key={setIndex} style={styles.setContainer}>
-                        <Text style={styles.setLabel}>Set {setIndex + 1}</Text>
+                <Image
+                  source={{ uri: exercise.gifUrl }}
+                  style={styles.exerciseGif}
+                />
 
-                        <View style={styles.inputRow}>
-                          <Text style={styles.inputLabel}>Reps</Text>
-                          <TextInput
-                            style={styles.inputFullWidth}
-                            placeholder="Reps"
-                            keyboardType="numeric"
-                            value={set.reps.toString()}
-                            onChangeText={(value) =>
-                              handleSetChange(
-                                exerciseIndex,
-                                setIndex,
-                                'reps',
-                                parseInt(value) || 0,
-                              )
-                            }
-                          />
-                        </View>
-                        <View style={styles.inputRow}>
-                          <Text style={styles.inputLabel}>KG</Text>
-                          <TextInput
-                            style={styles.inputFullWidth}
-                            placeholder="KG"
-                            keyboardType="numeric"
-                            value={set.weight.toString()}
-                            onChangeText={(value) =>
-                              handleSetChange(
-                                exerciseIndex,
-                                setIndex,
-                                'weight',
-                                parseInt(value) || 0,
-                              )
-                            }
-                          />
-                        </View>
-                        <TouchableOpacity
-                          style={styles.removeSetButton}
-                          onPress={() =>
-                            handleRemoveSet(exerciseIndex, setIndex)
+                <View style={styles.inputContainer}>
+                  {exercise.sets.map((set, setIndex) => (
+                    <View key={setIndex} style={styles.setContainer}>
+                      <Text style={styles.setLabel}>Set {setIndex + 1}</Text>
+
+                      <View style={styles.inputRow}>
+                        <Text style={styles.inputLabel}>Reps:</Text>
+                        <TextInput
+                          style={styles.inputFullWidth}
+                          placeholder="Reps"
+                          keyboardType="numeric"
+                          value={set.reps.toString()}
+                          onChangeText={(value) =>
+                            handleSetChange(
+                              exerciseIndex,
+                              setIndex,
+                              'reps',
+                              parseInt(value) || 0,
+                            )
                           }
-                        >
-                          <Text style={styles.buttonText}>Remove Set</Text>
-                        </TouchableOpacity>
+                        />
                       </View>
-                    ))}
-                  </View>
+                      <View style={styles.inputRow}>
+                        <Text style={styles.inputLabel}>Weight:</Text>
+                        <TextInput
+                          style={styles.inputFullWidth}
+                          placeholder="weight"
+                          keyboardType="numeric"
+                          value={set.weight.toString()}
+                          onChangeText={(value) =>
+                            handleSetChange(
+                              exerciseIndex,
+                              setIndex,
+                              'weight',
+                              parseInt(value) || 0,
+                            )
+                          }
+                        />
+                      </View>
+                      <TouchableOpacity
+                        style={styles.removeSetButton}
+                        onPress={() =>
+                          handleRemoveSet(exerciseIndex, setIndex)
+                        }
+                      >
+                        <Text style={styles.buttonText}>Remove Set</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
                 </View>
 
                 <View style={styles.buttonRow}>
@@ -293,15 +292,19 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
   },
-  rowContainer: { flexDirection: 'row', alignItems: 'center', width: '100%' },
   exerciseName: {
     fontSize: 18,
     color: 'white',
     textAlign: 'center',
     marginVertical: 10,
   },
-  exerciseGif: { width: 80, height: 80, resizeMode: 'contain', alignSelf: 'flex-start', marginRight: 10 },
-  inputContainer: { flex: 1, marginLeft: 10 },
+  exerciseGif: {
+    width: 80,
+    height: 80,
+    resizeMode: 'contain',
+    marginBottom: 10,
+  },
+  inputContainer: { width: '100%', paddingHorizontal: 20 },
   inputRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 5 },
   setContainer: { marginBottom: 5 },
   setLabel: {
@@ -309,6 +312,9 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     marginVertical: 5,
+    borderWidth: 1,
+    borderColor: 'white',
+    padding: 5,
   },
   inputLabel: { fontSize: 16, color: 'white', marginRight: 10 },
   inputFullWidth: {
