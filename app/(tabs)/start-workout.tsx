@@ -4,11 +4,11 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Modal,
-  FlatList,
   ScrollView,
   TextInput,
   Image,
+  Modal,
+  FlatList,
 } from 'react-native';
 import { exercises } from '../../database/Exercises';
 
@@ -20,9 +20,7 @@ const StartWorkout = () => {
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [showExerciseList, setShowExerciseList] = useState(false);
-  const [selectedExercises, setSelectedExercises] = useState<
-    SelectedExercise[]
-  >([]);
+  const [selectedExercises, setSelectedExercises] = useState<SelectedExercise[]>([]);
 
   useEffect(() => {
     if (isRunning) {
@@ -130,75 +128,53 @@ const StartWorkout = () => {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <TouchableOpacity
-          style={styles.addExerciseButton}
-          onPress={handleAddExercise}
-        >
-          <Text style={styles.buttonText}>Add Exercise</Text>
-        </TouchableOpacity>
-
         {selectedExercises.length > 0 && (
           <View style={styles.selectedExercisesContainer}>
-            <Text style={styles.exerciseTitle}>Current Workout:</Text>
             {selectedExercises.map((exercise, exerciseIndex) => (
               <View key={exerciseIndex} style={styles.selectedExercise}>
-                <Text style={styles.exerciseName}>{exercise.name}</Text>
-
-                <Image
-                  source={{ uri: exercise.gifUrl }}
-                  style={styles.exerciseGif}
-                />
-
-                <View style={styles.inputContainer}>
-                  {exercise.sets.map((set, setIndex) => (
-                    <View key={setIndex} style={styles.setContainer}>
-                      <Text style={styles.setLabel}>Set {setIndex + 1}</Text>
-
-                      <View style={styles.inputRow}>
-                        <Text style={styles.inputLabel}>Reps:</Text>
-                        <TextInput
-                          style={styles.inputFullWidth}
-                          placeholder="Reps"
-                          keyboardType="numeric"
-                          value={set.reps.toString()}
-                          onChangeText={(value) =>
-                            handleSetChange(
-                              exerciseIndex,
-                              setIndex,
-                              'reps',
-                              parseInt(value) || 0,
-                            )
-                          }
-                        />
-                      </View>
-                      <View style={styles.inputRow}>
-                        <Text style={styles.inputLabel}>Weight:</Text>
-                        <TextInput
-                          style={styles.inputFullWidth}
-                          placeholder="weight"
-                          keyboardType="numeric"
-                          value={set.weight.toString()}
-                          onChangeText={(value) =>
-                            handleSetChange(
-                              exerciseIndex,
-                              setIndex,
-                              'weight',
-                              parseInt(value) || 0,
-                            )
-                          }
-                        />
-                      </View>
-                      <TouchableOpacity
-                        style={styles.removeSetButton}
-                        onPress={() =>
-                          handleRemoveSet(exerciseIndex, setIndex)
-                        }
-                      >
-                        <Text style={styles.buttonText}>Remove Set</Text>
-                      </TouchableOpacity>
-                    </View>
-                  ))}
+                <View style={styles.exerciseHeader}>
+                  <Image
+                    source={{ uri: exercise.gifUrl }}
+                    style={styles.exerciseGif}
+                  />
+                  <Text style={styles.exerciseName}>{exercise.name}</Text>
+                  <TouchableOpacity
+                    style={styles.removeExerciseButton}
+                    onPress={() => handleRemoveExercise(exerciseIndex)}
+                  >
+                    <Text style={styles.buttonText}>Remove Exercise</Text>
+                  </TouchableOpacity>
                 </View>
+
+                <View style={styles.setHeader}>
+                  <Text style={styles.setHeaderText}>SET</Text>
+                  <Text style={styles.setHeaderText}>KG</Text>
+                  <Text style={styles.setHeaderText}>REPS</Text>
+                </View>
+
+                {exercise.sets.map((set, setIndex) => (
+                  <View key={setIndex} style={styles.setRow}>
+                    <Text style={styles.setNumber}>{setIndex + 1}</Text>
+                    <TextInput
+                      style={styles.inputSmall}
+                      placeholder="KG"
+                      keyboardType="numeric"
+                      value={set.weight.toString()}
+                      onChangeText={(value) =>
+                        handleSetChange(exerciseIndex, setIndex, 'weight', parseInt(value) || 0)
+                      }
+                    />
+                    <TextInput
+                      style={styles.inputSmall}
+                      placeholder="Reps"
+                      keyboardType="numeric"
+                      value={set.reps.toString()}
+                      onChangeText={(value) =>
+                        handleSetChange(exerciseIndex, setIndex, 'reps', parseInt(value) || 0)
+                      }
+                    />
+                  </View>
+                ))}
 
                 <View style={styles.buttonRow}>
                   <TouchableOpacity
@@ -208,10 +184,10 @@ const StartWorkout = () => {
                     <Text style={styles.buttonText}>Add Set</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={styles.removeButton}
-                    onPress={() => handleRemoveExercise(exerciseIndex)}
+                    style={styles.removeSetButton}
+                    onPress={() => handleRemoveSet(exerciseIndex, exercise.sets.length - 1)}
                   >
-                    <Text style={styles.buttonText}>Remove Exercise</Text>
+                    <Text style={styles.buttonText}>Remove Set</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -220,11 +196,14 @@ const StartWorkout = () => {
         )}
       </ScrollView>
 
-      <Modal
-        visible={showExerciseList}
-        animationType="slide"
-        transparent={true}
+      <TouchableOpacity
+        style={styles.addExerciseButton}
+        onPress={handleAddExercise}
       >
+        <Text style={styles.buttonText}>Add Exercise</Text>
+      </TouchableOpacity>
+
+      <Modal visible={showExerciseList} animationType="slide" transparent={true}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Select an Exercise</Text>
@@ -252,130 +231,46 @@ const StartWorkout = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#1c1c1e' },
-  timerContainer: { alignItems: 'center', paddingVertical: 20 },
-  title: { fontSize: 24, fontWeight: 'bold', color: 'white', marginTop: 40 },
-  timer: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    color: 'skyblue',
-    marginBottom: 10,
-  },
-  buttonContainer: { flexDirection: 'row', marginBottom: 20 },
-  button: {
-    backgroundColor: 'skyblue',
-    padding: 10,
-    borderRadius: 5,
-    marginHorizontal: 10,
-  },
-  buttonText: { fontSize: 13, fontWeight: 'bold', color: 'white' },
-  scrollContainer: {
-    paddingHorizontal: 20,
-    alignItems: 'center',
-    paddingBottom: 80,
-  },
-  addExerciseButton: {
-    backgroundColor: '#ff914d',
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 20,
-  },
+  timerContainer: { alignItems: 'center', paddingVertical: 10, marginTop: 20 },
+  title: { fontSize: 18, fontWeight: 'bold', color: 'white', marginTop: '10%' },
+  timer: { fontSize: 28, fontWeight: 'bold', color: 'skyblue' },
+  buttonContainer: { flexDirection: 'row', marginBottom: 10 },
+  button: { backgroundColor: 'skyblue', padding: 8, borderRadius: 5, marginHorizontal: 5 },
+  buttonText: { fontSize: 12, fontWeight: 'bold', color: 'white' },
+  scrollContainer: { paddingHorizontal: 20, alignItems: 'center', paddingBottom: 80 },
   selectedExercisesContainer: { width: '100%' },
-  exerciseTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: 'white',
-    marginBottom: 10,
-  },
   selectedExercise: {
-    alignItems: 'center',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
-  exerciseName: {
-    fontSize: 18,
-    color: 'white',
-    textAlign: 'center',
-    marginVertical: 10,
-  },
-  exerciseGif: {
-    width: 80,
-    height: 80,
-    resizeMode: 'contain',
+    borderBottomColor: '#333',
     marginBottom: 10,
   },
-  inputContainer: { width: '100%', paddingHorizontal: 20 },
-  inputRow: { flexDirection: 'row', alignItems: 'center', marginVertical: 5 },
-  setContainer: { marginBottom: 5 },
-  setLabel: {
-    fontSize: 16,
-    color: 'white',
-    fontWeight: 'bold',
-    marginVertical: 5,
-    borderWidth: 1,
-    borderColor: 'white',
-    padding: 5,
-  },
-  inputLabel: { fontSize: 16, color: 'white', marginRight: 10 },
-  inputFullWidth: {
-    flex: 1,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 5,
-    padding: 8,
-    textAlign: 'center',
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 10,
-    width: '100%',
-  },
-  addSetButton: {
-    backgroundColor: '#007aff',
-    padding: 10,
-    borderRadius: 5,
-    flex: 0.45,
-    alignItems: 'center',
-  },
-  removeButton: {
+  exerciseHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  exerciseGif: { width: 40, height: 40, resizeMode: 'contain', marginRight: 10 },
+  exerciseName: { fontSize: 16, color: 'white', fontWeight: 'bold' },
+  removeExerciseButton: {
     backgroundColor: 'red',
-    padding: 10,
-    borderRadius: 5,
-    flex: 0.45,
-    alignItems: 'center',
-  },
-  removeSetButton: {
-    backgroundColor: 'orange',
-    padding: 8,
+    padding: 5,
     borderRadius: 5,
     alignItems: 'center',
-    marginTop: 5,
+    marginLeft: 'auto',
   },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-  },
-  modalContent: {
-    width: '80%',
-    padding: 10,
-    backgroundColor: '#ffffff',
-    borderRadius: 10,
-  },
+
+  setHeader: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5 },
+  setHeaderText: { fontSize: 12, color: 'gray' },
+  setRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 5 },
+  setNumber: { fontSize: 14, color: 'white', width: 30, textAlign: 'center' },
+  inputSmall: { width: 60, backgroundColor: '#e0e0e0', borderRadius: 5, padding: 4, textAlign: 'center' },
+  buttonRow: { flexDirection: 'row', justifyContent: 'space-around', marginTop: 10, width: '100%' },
+  addSetButton: { backgroundColor: '#007aff', padding: 6, borderRadius: 5, flex: 0.45, alignItems: 'center' },
+  removeSetButton: { backgroundColor: 'red', padding: 6, borderRadius: 5, flex: 0.45, alignItems: 'center' },
+  addExerciseButton: { backgroundColor: '#ff914d', padding: 12, borderRadius: 10, position: 'absolute', bottom: 20, alignSelf: 'center' },
+  modalContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.8)' },
+  modalContent: { width: '80%', padding: 10, backgroundColor: '#ffffff', borderRadius: 10 },
   modalTitle: { fontSize: 20, fontWeight: 'bold' },
-  exerciseItem: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
-  },
+  exerciseItem: { padding: 10, borderBottomWidth: 1, borderBottomColor: '#ccc' },
   exerciseItemText: { fontSize: 18 },
-  closeButton: {
-    marginTop: 10,
-    color: 'blue',
-    textAlign: 'center',
-    fontSize: 16,
-  },
+  closeButton: { marginTop: 10, color: 'blue', textAlign: 'center', fontSize: 16 },
 });
 
 export default StartWorkout;
