@@ -19,6 +19,7 @@ type SelectedExercise = (typeof exercises)[0] & {
 const StartWorkout = () => {
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
+  const [workoutTitle, setWorkoutTitle] = useState('My Workout');
   const [showExerciseList, setShowExerciseList] = useState(false);
   const [selectedExercises, setSelectedExercises] = useState<
     SelectedExercise[]
@@ -112,7 +113,21 @@ const StartWorkout = () => {
       <View style={styles.timerContainer}>
         <Text style={styles.title}>Workout Timer</Text>
         <Text style={styles.timer}>{formatTime(seconds)}</Text>
-
+        <View style={styles.header}>
+          <TextInput
+            style={styles.titleInput}
+            value={workoutTitle}
+            onChangeText={setWorkoutTitle}
+            placeholder="Enter Workout Title"
+            placeholderTextColor="gray"
+          />
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={() => alert('Workout saved!')}
+          >
+            <Text style={styles.saveButtonText}>Save</Text>
+          </TouchableOpacity>
+        </View>
         <View style={styles.buttonContainer}>
           {!isRunning ? (
             <TouchableOpacity style={styles.button} onPress={handleStart}>
@@ -364,6 +379,32 @@ const styles = StyleSheet.create({
     color: 'blue',
     textAlign: 'center',
     fontSize: 16,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#1c1c1e',
+  },
+  titleInput: {
+    flex: 1,
+    fontSize: 18,
+    color: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: 'gray',
+    paddingHorizontal: 5,
+    marginRight: 10,
+  },
+  saveButton: {
+    backgroundColor: 'skyblue',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+  },
+  saveButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 
