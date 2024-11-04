@@ -1,18 +1,12 @@
 import { postgresConfig, setEnvironmentVariables } from './util/config.js';
-import postgres from 'postgres';
-
-
 
 setEnvironmentVariables();
-console.log('Database User:', process.env.PGUSER);
 
-export default {
-  connection: postgres({
-    host: process.env.PGHOST,
-    port: Number(process.env.PGPORT),
-    database: process.env.PGDATABASE,
-    username: process.env.PGUSER,
-    password: process.env.PGPASSWORD,
-    ...postgresConfig,
-  }),
-};
+// const option = {
+//   transform: {
+//     ...postgres.camel,
+//     undefined: null,
+//   },
+// };
+
+export default postgresConfig;
