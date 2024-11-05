@@ -1,7 +1,5 @@
 import type { Sql } from 'postgres';
-import postgres from 'postgres';
 import { z } from 'zod';
-import { sql } from '../database/connect';
 
 export const workoutSchema = z.object({
   title: z.string(),
@@ -19,7 +17,6 @@ export async function up(sql: Sql) {
   `;
 }
 
-// Rollback function to drop the `workouts` table
 export async function down(sql: Sql) {
   await sql`DROP TABLE workouts`;
 }
