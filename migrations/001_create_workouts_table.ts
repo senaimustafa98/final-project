@@ -1,6 +1,7 @@
 import type { Sql } from 'postgres';
+import postgres from 'postgres';
 import { z } from 'zod';
-
+import { sql } from '../database/connect';
 
 export const workoutSchema = z.object({
   title: z.string(),
@@ -8,14 +9,12 @@ export const workoutSchema = z.object({
   duration: z.string().optional(),
 });
 
-// Migration to create the `workouts` table
 export async function up(sql: Sql) {
   await sql`
     CREATE TABLE workouts (
-      id integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-      title varchar(100),
-      date timestamptz DEFAULT now(),
-      duration interval
+      id serial PRIMARY KEY,
+      title varchar(255) NOT NULL,
+      created_at timestamp DEFAULT CURRENT_TIMESTAMP
     )
   `;
 }
