@@ -1,16 +1,19 @@
 import { config } from 'dotenv-safe';
 import postgres from 'postgres';
 
-// Define PostgreSQL configuration
+// Load environment variables
+export function setEnvironmentVariables() {
+  config(); // This will load .env variables
+}
+
+// Define PostgreSQL configuration with environment variables
 export const postgresConfig = {
-  ssl: false,
+  host: process.env.PGHOST || 'localhost',
+  user: process.env.PGUSER || 'workoutapp',
+  password: process.env.PGPASSWORD || 'workoutapp',
+  database: process.env.PGDATABASE || 'workout_tracker',
   transform: {
     ...postgres.camel,
     undefined: null,
   },
 };
-
-// Function to set environment variables
-export function setEnvironmentVariables() {
-  config();
-}
