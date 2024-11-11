@@ -49,15 +49,14 @@ const styles = StyleSheet.create({
 });
 
 const SignUp = () => {
-  const router = useRouter(); // Go back button
+  const router = useRouter();
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
-  const [userName, setUsername] = useState<string>('');
 
   const handleSignUp = () => {
     if (email === '' || password === '' || confirmPassword === '') {
-      Alert.alert('Please fill out ALL fields');
+      Alert.alert('Please fill out all fields');
       return;
     }
     if (password !== confirmPassword) {
@@ -77,14 +76,6 @@ const SignUp = () => {
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        placeholderTextColor={colors.placeholder}
-        value={userName}
-        onChangeText={setUsername}
         autoCapitalize="none"
       />
       <TextInput

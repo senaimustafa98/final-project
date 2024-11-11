@@ -1,32 +1,48 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 
-type Workout = {
-  date: string;
-  type: string;
-  duration: string;
-  exercises: {
-    name: string;
-    sets: { reps: number; weight: number }[];
-  }[];
+type ExerciseSet = {
+  reps: number;
+  weight: number;
 };
 
-const workoutData: Workout[] = [
-  {
-    date: 'June 12, 2023',
-    type: 'Full Body',
-    duration: '60 mins',
-    exercises: [
-      { name: 'Squat', sets: [{ reps: 10, weight: 50 }, { reps: 8, weight: 60 }] },
-      { name: 'Bench Press', sets: [{ reps: 10, weight: 40 }, { reps: 8, weight: 45 }] },
-      { name: 'Deadlift', sets: [{ reps: 6, weight: 80 }] },
-    ],
-  },
-  // Additional placeholder workouts...
-];
+type Exercise = {
+  name: string;
+  sets: ExerciseSet[];
+};
+
+type Workout = {
+  id: number;
+  title: string;
+  created_at: string;
+  duration: string | null;
+  exercises: Exercise[];
+};
 
 const WorkoutHistory = () => {
+  const [workouts, setWorkouts] = useState<Workout[]>([]);
   const [expandedWorkoutIndex, setExpandedWorkoutIndex] = useState<number | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchWorkouts = async () => {
+      try {
+        const response = await fetch('http://10.0.2.2:3000/api/workouts');
+        const textResponse = await response.text();
+        console.log('API response:', textResponse); // Log the full response
+
+        const data = JSON.parse(textResponse);
+        console.log('Parsed data:', data); // Log the parsed data
+        setWorkouts(data.workouts); // Adjust if needed
+      } catch (error) {
+        console.error('Error fetching workouts:', error); // Log the error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWorkouts();
+  }, []);
 
   const toggleExpand = (index: number) => {
     setExpandedWorkoutIndex(index === expandedWorkoutIndex ? null : index);
@@ -35,33 +51,37 @@ const WorkoutHistory = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.header}>Workout History</Text>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {workoutData.map((workout, index) => (
-          <View key={index} style={styles.workoutItem}>
-            <TouchableOpacity onPress={() => toggleExpand(index)}>
-              <Text style={styles.workoutDate}>{workout.date}</Text>
-              <Text style={styles.workoutDetail}>{`${workout.type} - ${workout.duration}`}</Text>
-              <Text style={styles.workoutExercises}>{`${workout.exercises.length} Exercises`}</Text>
-            </TouchableOpacity>
+      {loading ? (
+        <ActivityIndicator size="large" color="#00ff00" />
+      ) : (
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          {workouts.map((workout, index) => (
+            <View key={workout.id} style={styles.workoutItem}>
+              <TouchableOpacity onPress={() => toggleExpand(index)}>
+                <Text style={styles.workoutDate}>{new Date(workout.created_at).toLocaleDateString()}</Text>
+                <Text style={styles.workoutDetail}>{`${workout.title} - ${workout.duration || 'Unknown duration'}`}</Text>
+                <Text style={styles.workoutExercises}>{`${workout.exercises.length} Exercises`}</Text>
+              </TouchableOpacity>
 
-            {expandedWorkoutIndex === index && (
-              <View style={styles.exerciseDetails}>
-                {workout.exercises.map((exercise, exIndex) => (
-                  <View key={exIndex} style={styles.exerciseItem}>
-                    <Text style={styles.exerciseName}>{exercise.name}</Text>
-                    {exercise.sets.map((set, setIndex) => (
-                      <View key={setIndex} style={styles.setDetail}>
-                        <Text style={styles.setText}>{`Set ${setIndex + 1}:`}</Text>
-                        <Text style={styles.setText}>{`${set.reps} reps, ${set.weight} kg`}</Text>
-                      </View>
-                    ))}
-                  </View>
-                ))}
-              </View>
-            )}
-          </View>
-        ))}
-      </ScrollView>
+              {expandedWorkoutIndex === index && (
+                <View style={styles.exerciseDetails}>
+                  {workout.exercises.map((exercise, exIndex) => (
+                    <View key={exIndex} style={styles.exerciseItem}>
+                      <Text style={styles.exerciseName}>{exercise.name}</Text>
+                      {exercise.sets.map((set, setIndex) => (
+                        <View key={setIndex} style={styles.setDetail}>
+                          <Text style={styles.setText}>{`Set ${setIndex + 1}:`}</Text>
+                          <Text style={styles.setText}>{`${set.reps} reps, ${set.weight} kg`}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 };
