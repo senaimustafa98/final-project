@@ -30,9 +30,6 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
-    textShadowColor: 'black',
-    textShadowOffset: { width: -1, height: 1 },
-    textShadowRadius: 1,
   },
 });
 

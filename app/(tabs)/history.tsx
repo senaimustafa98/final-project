@@ -27,13 +27,13 @@ const WorkoutHistory = () => {
   useEffect(() => {
     const fetchWorkouts = async () => {
       try {
-        const response = await fetch('http://10.0.2.2:3000/api/workouts');
+        const response = await fetch('http://192.168.68.50:3000/api/workouts');
         const textResponse = await response.text();
         console.log('API response:', textResponse); // Log the full response
 
         const data = JSON.parse(textResponse);
         console.log('Parsed data:', data); // Log the parsed data
-        setWorkouts(data.workouts); // Adjust if needed
+        setWorkouts(data.workouts);
       } catch (error) {
         console.error('Error fetching workouts:', error); // Log the error
       } finally {
