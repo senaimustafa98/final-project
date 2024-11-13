@@ -81,7 +81,7 @@ export async function POST(request: Request): Promise<ExpoApiResponse<WorkoutsRe
     );
   }
 
-  // Ensure exercises is always an array
+  // Explicitly ensure exercises is always an array, even if it's undefined
   workout.exercises = workout.exercises || []; // If exercises is undefined, set it as an empty array
 
   return ExpoApiResponse.json({ workout: workout });

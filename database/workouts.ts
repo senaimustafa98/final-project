@@ -6,7 +6,7 @@ export type Workout = {
   created_at: Date;
   duration: string | null;
   user_id: number;
-  exercises?: Exercise[]; // Ensure exercises are included in the Workout type
+  exercises: Exercise[]; // Ensure exercises are included in the Workout type
 };
 
 export type Exercise = {
@@ -47,6 +47,7 @@ export async function getWorkouts(user_id: number): Promise<Workout[]> {
     return [];
   }
 }
+
 
 // Create a new workout and insert related exercises
 export async function createWorkout(
@@ -97,7 +98,6 @@ export async function createWorkout(
     return null;
   }
 }
-
 // Fetch a specific workout by ID, including its exercises
 export async function getWorkoutById(id: number): Promise<Workout | null> {
   try {
