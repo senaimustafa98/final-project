@@ -6,6 +6,7 @@ export type Workout = {
   created_at: Date;
   duration: string | null;
   user_id: number;
+  exercises?: Exercise[]; // Ensure exercises are included in the Workout type
 };
 
 export type Exercise = {
@@ -17,7 +18,7 @@ export type Exercise = {
   weight: number | null;
 };
 
-// Fetch all workouts for a specific user
+// Fetch all workouts for a specific user, including exercises
 export async function getWorkouts(user_id: number): Promise<Workout[]> {
   try {
     const workouts = await sql`
@@ -29,27 +30,34 @@ export async function getWorkouts(user_id: number): Promise<Workout[]> {
         user_id = ${user_id};
     `;
 
-    return workouts.map((row) => ({
-      id: row.id,
-      title: row.title,
-      created_at: row.created_at,
-      duration: row.duration,
-      user_id: row.user_id,
-    })) as Workout[];
+    // Fetch exercises for each workout and attach them
+    const result = await Promise.all(
+      workouts.map(async (workout) => {
+        const exercises = await getExercisesByWorkoutId(workout.id);
+        return {
+          ...workout,
+          exercises: exercises || [], // Ensure exercises is always an array (even if empty)
+        };
+      })
+    );
+
+    return result as Workout[];
   } catch (error) {
     console.error('Error fetching workouts:', error);
     return [];
   }
 }
 
-// Create a new workout
+// Create a new workout and insert related exercises
 export async function createWorkout(
   title: string,
   duration: string | null,
   user_id: number,
+  exercises: { name: string; sets: { reps: number; weight: number }[] }[] // Include exercises in the function
 ): Promise<Workout | null> {
   if (!title || !user_id) throw new Error('Title and User ID are required');
   try {
+    // Insert the workout into the workouts table
     const [workout] = await sql`
       INSERT INTO
         workouts (title, duration, user_id)
@@ -62,6 +70,27 @@ export async function createWorkout(
       RETURNING
         *;
     `;
+
+    if (!workout) {
+      console.error('Error: Workout not created');
+      return null;
+    }
+
+    // Insert exercises related to this workout
+    for (let exercise of exercises) {
+      await sql`
+        INSERT INTO exercises (workout_id, name, sets)
+        VALUES (${workout.id}, ${exercise.name}, ${JSON.stringify(exercise.sets)});
+      `;
+    }
+
+    // Fetch and return the workout with exercises attached
+    const workoutWithExercises = await sql`
+      SELECT * FROM workouts WHERE id = ${workout.id};
+      SELECT * FROM exercises WHERE workout_id = ${workout.id};
+    `;
+
+    workout.exercises = workoutWithExercises[1] || []; // Ensure exercises is always an array
     return workout as Workout;
   } catch (error) {
     console.error('Error creating workout:', error);
@@ -69,7 +98,7 @@ export async function createWorkout(
   }
 }
 
-// Fetch a specific workout by ID
+// Fetch a specific workout by ID, including its exercises
 export async function getWorkoutById(id: number): Promise<Workout | null> {
   try {
     const [workout] = await sql`
@@ -80,7 +109,16 @@ export async function getWorkoutById(id: number): Promise<Workout | null> {
       WHERE
         id = ${id};
     `;
-    return workout ? (workout as Workout) : null;
+
+    if (!workout) {
+      return null;
+    }
+
+    // Fetch exercises associated with the workout
+    const exercises = await getExercisesByWorkoutId(id);
+    workout.exercises = exercises;
+
+    return workout as Workout;
   } catch (error) {
     console.error('Error fetching workout by ID:', error);
     return null;
