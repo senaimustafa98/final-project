@@ -15,11 +15,11 @@ export async function up(sql: Sql) {
   await sql`
     CREATE TABLE exercises (
       id integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-      workout_id integer REFERENCES workouts(id) ON DELETE CASCADE,
+      workout_id integer REFERENCES workouts (id) ON DELETE cascade,
       name varchar(50) NOT NULL,
-      sets integer[],
-      reps integer[],
-      weights integer[]
+      sets INTEGER[],
+      reps INTEGER[],
+      weights INTEGER[]
     )
   `;
 }

@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 
 type ExerciseSet = {
   reps: number;
@@ -21,19 +28,45 @@ type Workout = {
 
 const WorkoutHistory = () => {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
-  const [expandedWorkoutIndex, setExpandedWorkoutIndex] = useState<number | null>(null);
+  const [expandedWorkoutIndex, setExpandedWorkoutIndex] = useState<
+    number | null
+  >(null);
   const [loading, setLoading] = useState<boolean>(true);
+
+  const fetchWithTimeout = (
+    url: string,
+    options: RequestInit = {},
+    timeout = 5000,
+  ) => {
+    return new Promise<Response>((resolve, reject) => {
+      const timer = setTimeout(
+        () => reject(new Error('Request timed out')),
+        timeout,
+      );
+      fetch(url, options)
+        .then((response) => {
+          clearTimeout(timer);
+          resolve(response);
+        })
+        .catch((err) => {
+          clearTimeout(timer);
+          reject(err);
+        });
+    });
+  };
 
   useEffect(() => {
     const fetchWorkouts = async () => {
       try {
-        const response = await fetch('http://192.168.68.50:3000/api/workouts');
+        const response = await fetchWithTimeout(
+          'http://192.168.68.50:3000/api/workouts',
+        );
         const textResponse = await response.text();
         console.log('API response:', textResponse); // Log the full response
 
         const data = JSON.parse(textResponse);
         console.log('Parsed data:', data); // Log the parsed data
-        setWorkouts(data.workouts);
+        setWorkouts(data.workouts || data); // Adjust based on actual structure
       } catch (error) {
         console.error('Error fetching workouts:', error); // Log the error
       } finally {
@@ -58,9 +91,15 @@ const WorkoutHistory = () => {
           {workouts.map((workout, index) => (
             <View key={workout.id} style={styles.workoutItem}>
               <TouchableOpacity onPress={() => toggleExpand(index)}>
-                <Text style={styles.workoutDate}>{new Date(workout.created_at).toLocaleDateString()}</Text>
-                <Text style={styles.workoutDetail}>{`${workout.title} - ${workout.duration || 'Unknown duration'}`}</Text>
-                <Text style={styles.workoutExercises}>{`${workout.exercises.length} Exercises`}</Text>
+                <Text style={styles.workoutDate}>
+                  {new Date(workout.created_at).toLocaleDateString()}
+                </Text>
+                <Text
+                  style={styles.workoutDetail}
+                >{`${workout.title} - ${workout.duration || 'Unknown duration'}`}</Text>
+                <Text
+                  style={styles.workoutExercises}
+                >{`${workout.exercises.length} Exercises`}</Text>
               </TouchableOpacity>
 
               {expandedWorkoutIndex === index && (
@@ -70,8 +109,12 @@ const WorkoutHistory = () => {
                       <Text style={styles.exerciseName}>{exercise.name}</Text>
                       {exercise.sets.map((set, setIndex) => (
                         <View key={setIndex} style={styles.setDetail}>
-                          <Text style={styles.setText}>{`Set ${setIndex + 1}:`}</Text>
-                          <Text style={styles.setText}>{`${set.reps} reps, ${set.weight} kg`}</Text>
+                          <Text
+                            style={styles.setText}
+                          >{`Set ${setIndex + 1}:`}</Text>
+                          <Text
+                            style={styles.setText}
+                          >{`${set.reps} reps, ${set.weight} kg`}</Text>
                         </View>
                       ))}
                     </View>
@@ -88,7 +131,12 @@ const WorkoutHistory = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#1c1c1e', padding: 20 },
-  header: { fontSize: 24, fontWeight: 'bold', color: 'white', marginBottom: 20 },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
+    marginBottom: 20,
+  },
   scrollContainer: { paddingBottom: 20 },
   workoutItem: {
     backgroundColor: '#333',
@@ -102,7 +150,11 @@ const styles = StyleSheet.create({
   exerciseDetails: { marginTop: 10, paddingLeft: 10 },
   exerciseItem: { marginBottom: 10 },
   exerciseName: { color: 'skyblue', fontSize: 14, fontWeight: 'bold' },
-  setDetail: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 3 },
+  setDetail: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 3,
+  },
   setText: { color: 'white', fontSize: 12 },
 });
 

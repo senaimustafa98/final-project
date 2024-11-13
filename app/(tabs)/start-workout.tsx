@@ -24,6 +24,7 @@ const StartWorkout = () => {
   const [selectedExercises, setSelectedExercises] = useState<
     SelectedExercise[]
   >([]);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (isRunning) {
@@ -108,6 +109,44 @@ const StartWorkout = () => {
     );
   };
 
+  // Save workout to backend
+  const saveWorkout = async () => {
+    setSaving(true);
+    try {
+      const workoutData = {
+        title: workoutTitle,
+        duration: formatTime(seconds),
+        exercises: selectedExercises.map((exercise) => ({
+          name: exercise.name,
+          sets: exercise.sets,
+        })),
+      };
+
+      const response = await fetch(
+        'http://192.168.68.50:3000/api/workouts/createWorkout',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(workoutData),
+        },
+      );
+
+      if (response.ok) {
+        alert('Workout saved successfully!');
+        setWorkoutTitle('My Workout');
+        setSelectedExercises([]);
+        setSeconds(0);
+      } else {
+        alert('Failed to save workout.');
+      }
+    } catch (error) {
+      console.error('Error saving workout:', error);
+      alert('An error occurred while saving the workout.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.timerContainer}>
@@ -123,9 +162,12 @@ const StartWorkout = () => {
           />
           <TouchableOpacity
             style={styles.saveButton}
-            onPress={() => alert('Workout saved!')}
+            onPress={saveWorkout}
+            disabled={saving}
           >
-            <Text style={styles.saveButtonText}>Save</Text>
+            <Text style={styles.saveButtonText}>
+              {saving ? 'Saving...' : 'Save'}
+            </Text>
           </TouchableOpacity>
         </View>
         <View style={styles.buttonContainer}>

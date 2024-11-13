@@ -3,7 +3,7 @@ import postgres from 'postgres';
 
 // Load environment variables
 export function setEnvironmentVariables() {
-  config(); // This will load .env variables
+  config();
 }
 
 // Define PostgreSQL configuration with environment variables
