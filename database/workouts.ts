@@ -16,6 +16,7 @@ export type Exercise = {
   set_number: number;
   reps: number;
   weight: number | null;
+  sets: { reps: number; weight: number }[];
 };
 
 // Fetch all workouts for a specific user, including exercises

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import { useFocusEffect } from 'expo-router';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -55,11 +56,11 @@ const WorkoutHistory = () => {
     });
   };
 
-  useEffect(() => {
+  /* useEffect(() => {
     const fetchWorkouts = async () => {
       try {
-        const response = await fetchWithTimeout(
-          'http://192.168.68.50:3000/api/workouts',
+        const response = await fetch(
+          '/api/workouts',
         );
         const textResponse = await response.text();
         console.log('API response:', textResponse); // Log the full response
@@ -75,7 +76,19 @@ const WorkoutHistory = () => {
     };
 
     fetchWorkouts();
-  }, []);
+  }, []); */
+  useFocusEffect(
+    useCallback(() => {
+      async function getWorkouts() {
+        const response = await fetch('/api/workouts');
+
+        const UserResponseBodyGet = await response.json();
+      }
+      getWorkouts().catch((error) => {
+        console.error(error);
+      });
+    }, []),
+  );
 
   const toggleExpand = (index: number) => {
     setExpandedWorkoutIndex(index === expandedWorkoutIndex ? null : index);
