@@ -10,7 +10,7 @@ export default function Home() {
         <Link href="/login" style={styles.buttonLink}>
           <Text style={styles.buttonText}>Login</Text>
         </Link>
-        <Link href="/signup" style={styles.buttonLink}>
+        <Link href="/register" style={styles.buttonLink}>
           <Text style={styles.buttonText}>Sign Up</Text>
         </Link>
       </View>

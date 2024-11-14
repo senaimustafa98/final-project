@@ -59,7 +59,7 @@ export default function RootLayout() {
         options={{ tabBarItemStyle: { display: 'none' } }}
       />
       <Tabs.Screen
-        name="(auth)/signup"
+        name="(auth)/register"
         options={{ tabBarItemStyle: { display: 'none' } }}
       />
       <Tabs.Screen

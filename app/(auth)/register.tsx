@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     marginBottom: 25,
     paddingHorizontal: 10,
     fontSize: 16,
-    color: 'white',
+    color: 'black',
     backgroundColor: 'skyblue',
     textAlign: 'center',
   },
@@ -50,20 +50,35 @@ const styles = StyleSheet.create({
 
 const SignUp = () => {
   const router = useRouter();
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
-  const handleSignUp = () => {
-    if (email === '' || password === '' || confirmPassword === '') {
+  const handleSignUp = async () => {
+    if (username === '' || password === '') {
       Alert.alert('Please fill out all fields');
       return;
     }
-    if (password !== confirmPassword) {
-      Alert.alert('Passwords do not match');
-      return;
+
+    try {
+      const response = await fetch(`/api/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        Alert.alert('Account created successfully!');
+        router.push('/login');
+      } else {
+        Alert.alert('Error', result.error || 'Registration failed');
+      }
+    } catch (error) {
+      Alert.alert('Network error', 'Please try again later');
     }
-    Alert.alert('Account created successfully!');
   };
 
   return (
@@ -71,11 +86,10 @@ const SignUp = () => {
       <Text style={styles.title}>Sign Up</Text>
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder="Username"
         placeholderTextColor={colors.placeholder}
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
+        value={username}
+        onChangeText={setUsername}
         autoCapitalize="none"
       />
       <TextInput
@@ -84,14 +98,6 @@ const SignUp = () => {
         placeholderTextColor={colors.placeholder}
         value={password}
         onChangeText={setPassword}
-        secureTextEntry
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Confirm Password"
-        placeholderTextColor={colors.placeholder}
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
         secureTextEntry
       />
       <CustomButton title="Register" onPress={handleSignUp} />

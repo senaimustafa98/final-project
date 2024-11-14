@@ -37,7 +37,7 @@ export async function getWorkouts(user_id: number): Promise<Workout[]> {
         const exercises = await getExercisesByWorkoutId(workout.id);
         return {
           ...workout,
-          exercises: exercises || [], // Ensure exercises is always an array (even if empty)
+          exercises: exercises || [], // Ensure exercises is always an array
         };
       })
     );
@@ -55,7 +55,7 @@ export async function createWorkout(
   title: string,
   duration: string | null,
   user_id: number,
-  exercises: { name: string; sets: { reps: number; weight: number }[] }[] // Include exercises in the function
+  exercises: { name: string; sets: { reps: number; weight: number }[] }[]
 ): Promise<Workout | null> {
   if (!title || !user_id) throw new Error('Title and User ID are required');
   try {

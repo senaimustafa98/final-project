@@ -1,24 +1,22 @@
 import type { Sql } from 'postgres';
 import { z } from 'zod';
-
+export type User = {
+  id: number;
+  username: string;
+};
 export const userSchema = z.object({
-  email: z.string().email({ message: 'Invalid email address' }),
-  password: z
-    .string()
-    .min(6, { message: 'Password must be at least 6 characters long' }),
+  username: z.string().min(3),
+  password: z.string().min(3),
 });
-
 export async function up(sql: Sql) {
   await sql`
     CREATE TABLE users (
-      id serial PRIMARY KEY,
-      email varchar(50) UNIQUE NOT NULL,
-      password varchar(255) NOT NULL,
-      created_at timestamp DEFAULT CURRENT_TIMESTAMP
-    )
+      id integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+      username varchar(80) NOT NULL UNIQUE,
+      password_hash varchar(80) NOT NULL
+    );
   `;
 }
-
 export async function down(sql: Sql) {
   await sql`DROP TABLE users`;
 }
