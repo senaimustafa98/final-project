@@ -5,9 +5,10 @@ type UserWithPasswordHash = User & {
   passwordHash: string;
 };
 export async function getUser(sessionToken: Session['token']) {
-  const [user] = await sql<Pick<User, 'username'>[]>`
+  const [user] = await sql<Pick<User, 'username' | 'created_at' >[]>`
     SELECT
-      users.username
+      users.username,
+      users.created_at
     FROM
       users
       INNER JOIN sessions ON (
@@ -22,7 +23,8 @@ export async function getUserInsecure(username: User['username']) {
   const [user] = await sql<User[]>`
     SELECT
       users.id,
-      users.username
+      users.username,
+      users.created_at
     FROM
       users
     WHERE
@@ -44,7 +46,8 @@ export async function createUserInsecure(
       )
     RETURNING
       users.id,
-      users.username
+      users.username,
+      users.created_at
   `;
   return user;
 }

@@ -5,6 +5,7 @@ import type { User } from '../../migrations/001_create_users_table';
 export type UserResponseBodyGet =
   | {
       username: User['username'];
+      createdAt: string;
     }
   | {
       error: string;
@@ -28,5 +29,5 @@ export async function GET(
     return ExpoApiResponse.json({ error: 'User not found' });
   }
   // 4. return the user profile
-  return ExpoApiResponse.json({ username: user.username });
+  return ExpoApiResponse.json({ username: user.username, createdAt: user.created_at, });
 }

@@ -5,4 +5,5 @@ export const userSchema = z.object({
   password: z
     .string()
     .min(6, { message: 'Password must be at least 6 characters long' }),
+    created_at: z.string().optional()
 });

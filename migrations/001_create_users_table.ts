@@ -3,6 +3,7 @@ import { z } from 'zod';
 export type User = {
   id: number;
   username: string;
+  created_at: string
 };
 export const userSchema = z.object({
   username: z.string().min(3),
@@ -13,7 +14,8 @@ export async function up(sql: Sql) {
     CREATE TABLE users (
       id integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
       username varchar(80) NOT NULL UNIQUE,
-      password_hash varchar(80) NOT NULL
+      password_hash varchar(80) NOT NULL,
+      created_at timestamp NOT NULL DEFAULT now()
     );
   `;
 }

@@ -48,22 +48,40 @@ const styles = StyleSheet.create({
 
 const Login = () => {
   const router = useRouter();
-  const [email, setEmail] = useState<string>('');
+  const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
-  const handleLogin = () => {
-    if (email === '' || password === '') {
-      Alert.alert('Please enter both email and password');
+  const handleLogin = async () => {
+    if (username === '' || password === '') {
+      Alert.alert('Please enter both username and password');
       return;
     }
 
-    // Display the alert and then navigate
-    Alert.alert('Login successful!', '', [
-      {
-        text: 'OK',
-        onPress: () => router.push('/(tabs)/profile'),
-      },
-    ]);
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        Alert.alert('Login successful!', '', [
+          {
+            text: 'OK',
+            onPress: () => router.push('/(tabs)/profile'),
+          },
+        ]);
+      } else {
+        Alert.alert('Login failed', result.error || 'Invalid credentials');
+      }
+    } catch (error) {
+      console.error('Error during login:', error);
+      Alert.alert('Network error', 'Please try again later');
+    }
   };
 
   return (
@@ -71,11 +89,10 @@ const Login = () => {
       <Text style={styles.title}>Login</Text>
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder="Username"
         placeholderTextColor={colors.placeholder}
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
+        value={username}
+        onChangeText={setUsername}
         autoCapitalize="none"
       />
       <TextInput
@@ -87,7 +104,7 @@ const Login = () => {
         secureTextEntry
       />
       <CustomButton title="Login" onPress={handleLogin} />
-      <Link href="/signup" style={styles.registerText}>
+      <Link href="/register" style={styles.registerText}>
         Don’t have an account? Register
       </Link>
       <Text style={styles.goBackText} onPress={() => router.push('/(auth)')}>
