@@ -1,4 +1,4 @@
-import { useRouter, Link, useLocalSearchParams } from 'expo-router';
+import { useRouter, Link, useLocalSearchParams, type Href } from 'expo-router';
 import React, { useState, useCallback } from 'react';
 import { View, Text, TextInput, Alert, StyleSheet } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -99,7 +99,8 @@ const Login = () => {
         setUsername('');
         setPassword('');
         if (returnTo && typeof returnTo === 'string') {
-
+          router.replace(returnTo as Href);
+        } else {
           router.replace('/(tabs)/profile');
         }
       } else {
