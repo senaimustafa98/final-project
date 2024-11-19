@@ -5,8 +5,9 @@ type UserWithPasswordHash = User & {
   passwordHash: string;
 };
 export async function getUser(sessionToken: Session['token']) {
-  const [user] = await sql<Pick<User, 'username' | 'created_at' >[]>`
+  const [user] = await sql<Pick<User, 'id' | 'username' | 'created_at' >[]>`
     SELECT
+      users.id,
       users.username,
       users.created_at
     FROM

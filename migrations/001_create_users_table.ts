@@ -3,6 +3,7 @@ import { z } from 'zod';
 export type User = {
   id: number;
   username: string;
+  passwordHash: string;
   created_at: string
 };
 export const userSchema = z.object({

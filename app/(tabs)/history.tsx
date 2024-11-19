@@ -1,5 +1,5 @@
 import { useFocusEffect } from 'expo-router';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
@@ -29,65 +29,72 @@ type Workout = {
 
 const WorkoutHistory = () => {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
-  const [expandedWorkoutIndex, setExpandedWorkoutIndex] = useState<
-    number | null
-  >(null);
+  const [expandedWorkoutIndex, setExpandedWorkoutIndex] = useState<null | number>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
-  const fetchWithTimeout = (
-    url: string,
-    options: RequestInit = {},
-    timeout = 5000,
-  ) => {
-    return new Promise<Response>((resolve, reject) => {
-      const timer = setTimeout(
-        () => reject(new Error('Request timed out')),
-        timeout,
-      );
-      fetch(url, options)
-        .then((response) => {
-          clearTimeout(timer);
-          resolve(response);
-        })
-        .catch((err) => {
-          clearTimeout(timer);
-          reject(err);
-        });
-    });
-  };
-
-  /* useEffect(() => {
-    const fetchWorkouts = async () => {
-      try {
-        const response = await fetch(
-          '/api/workouts',
-        );
-        const textResponse = await response.text();
-        console.log('API response:', textResponse); // Log the full response
-
-        const data = JSON.parse(textResponse);
-        console.log('Parsed data:', data); // Log the parsed data
-        setWorkouts(data.workouts || data); // Adjust based on actual structure
-      } catch (error) {
-        console.error('Error fetching workouts:', error); // Log the error
-      } finally {
-        setLoading(false);
+  const fetchWorkoutsForUser = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Fetch the current user
+      const userResponse = await fetch('/api/user+api.ts', { credentials: 'include' });
+      if (!userResponse.ok) {
+        throw new Error('Failed to fetch user');
       }
-    };
+      const userData = await userResponse.json();
+      const userId = userData.id; // Replace `id` with the correct field from your API response
 
-    fetchWorkouts();
-  }, []); */
+      // Fetch the user's workouts
+      const workoutResponse = await fetch(`/api/workouts?user_id=${userId}`);
+      if (!workoutResponse.ok) {
+        throw new Error('Failed to fetch workouts');
+      }
+      const workoutData = await workoutResponse.json();
+      setWorkouts(workoutData.workouts);
+    } catch (error) {
+      console.error('Error fetching workouts:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useFocusEffect(
     useCallback(() => {
-      async function getWorkouts() {
-        const response = await fetch('/api/workouts');
+      let isActive = true;
 
-        const UserResponseBodyGet = await response.json();
+      async function fetchWorkoutsForUser() {
+        setLoading(true);
+        try {
+          const userResponse = await fetch('/api/user', { credentials: 'include' });
+          const userData = await userResponse.json();
+
+          if (!userResponse.ok || !userData.id) {
+            throw new Error('Failed to fetch user ID');
+          }
+
+          const workoutResponse = await fetch(`/api/workouts?user_id=${userData.id}`);
+          if (!workoutResponse.ok) {
+            throw new Error('Failed to fetch workouts');
+          }
+
+          const workoutData = await workoutResponse.json();
+          if (isActive) {
+            setWorkouts(workoutData.workouts);
+          }
+        } catch (error) {
+          console.error('Error fetching workouts:', error);
+        } finally {
+          if (isActive) {
+            setLoading(false);
+          }
+        }
       }
-      getWorkouts().catch((error) => {
-        console.error(error);
-      });
-    }, []),
+
+      fetchWorkoutsForUser();
+
+      return () => {
+        isActive = false;
+      };
+    }, [])
   );
 
   const toggleExpand = (index: number) => {
@@ -107,14 +114,13 @@ const WorkoutHistory = () => {
                 <Text style={styles.workoutDate}>
                   {new Date(workout.created_at).toLocaleDateString()}
                 </Text>
-                <Text
-                  style={styles.workoutDetail}
-                >{`${workout.title} - ${workout.duration || 'Unknown duration'}`}</Text>
-                <Text
-                  style={styles.workoutExercises}
-                >{`${workout.exercises.length} Exercises`}</Text>
+                <Text style={styles.workoutDetail}>
+                  {`${workout.title} - ${workout.duration || 'Unknown duration'}`}
+                </Text>
+                <Text style={styles.workoutExercises}>
+                  {`${workout.exercises.length} Exercises`}
+                </Text>
               </TouchableOpacity>
-
               {expandedWorkoutIndex === index && (
                 <View style={styles.exerciseDetails}>
                   {workout.exercises.map((exercise, exIndex) => (
@@ -122,12 +128,12 @@ const WorkoutHistory = () => {
                       <Text style={styles.exerciseName}>{exercise.name}</Text>
                       {exercise.sets.map((set, setIndex) => (
                         <View key={setIndex} style={styles.setDetail}>
-                          <Text
-                            style={styles.setText}
-                          >{`Set ${setIndex + 1}:`}</Text>
-                          <Text
-                            style={styles.setText}
-                          >{`${set.reps} reps, ${set.weight} kg`}</Text>
+                          <Text style={styles.setText}>
+                            {`Set ${setIndex + 1}:`}
+                          </Text>
+                          <Text style={styles.setText}>
+                            {`${set.reps} reps, ${set.weight} kg`}
+                          </Text>
                         </View>
                       ))}
                     </View>

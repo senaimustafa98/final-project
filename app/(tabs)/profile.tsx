@@ -5,7 +5,6 @@ import { useRouter } from 'expo-router';
 
 type UserData = {
   username: string;
-  email: string;
   workouts: Array<any>;
   createdAt: string;
 };
@@ -18,7 +17,9 @@ const UserProfile = () => {
   useEffect(() => {
     async function fetchUserData() {
       try {
-        const response = await fetch('/api/user/profile');
+        const response = await fetch('/api/user', {
+          credentials: 'include', // Ensure cookies are sent
+        });
         const data: UserData = await response.json();
         setUserData(data);
       } catch (error) {
@@ -48,7 +49,7 @@ const UserProfile = () => {
     );
   }
 
-  const { username, email, workouts, createdAt } = userData;
+  const { username, workouts, createdAt } = userData;
 
   return (
     <View style={styles.container}>
@@ -57,11 +58,10 @@ const UserProfile = () => {
         style={styles.profileImage}
       />
       <Text style={styles.name}>{username}</Text>
-      <Text style={styles.email}>{email}</Text>
 
       <View style={styles.statsContainer}>
         <View style={styles.statBox}>
-          <Text style={styles.statNumber}>{workouts.length}</Text>
+          {/* <Text style={styles.statNumber}>{workouts.length}</Text> */}
           <Text style={styles.statLabel}>Workouts</Text>
         </View>
         <View style={styles.statBox}>
