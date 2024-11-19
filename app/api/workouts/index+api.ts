@@ -14,14 +14,16 @@ export type ErrorResponseBody = {
 };
 
 // Handle GET request to fetch all workouts for a specific user
-export async function GET(request: Request): Promise<ExpoApiResponse<WorkoutsResponseBodyGet | ErrorResponseBody>> {
+export async function GET(
+  request: Request,
+): Promise<ExpoApiResponse<WorkoutsResponseBodyGet | ErrorResponseBody>> {
   const url = new URL(request.url);
   const user_id = Number(url.searchParams.get('user_id')); // Extract user_id from query params
 
   if (!user_id) {
     return ExpoApiResponse.json(
       { error: 'User ID is required' },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -33,12 +35,16 @@ export async function GET(request: Request): Promise<ExpoApiResponse<WorkoutsRes
 }
 
 // Define the response type for POST requests (success)
-export type WorkoutsResponseBodyPost = {
-  workout: Workout;
-} | ErrorResponseBody;
+export type WorkoutsResponseBodyPost =
+  | {
+      workout: Workout;
+    }
+  | ErrorResponseBody;
 
 // Handle POST request to create a new workout
-export async function POST(request: Request): Promise<ExpoApiResponse<WorkoutsResponseBodyPost>> {
+export async function POST(
+  request: Request,
+): Promise<ExpoApiResponse<WorkoutsResponseBodyPost>> {
   const requestBody = await request.json();
 
   // Validate the request body using the workout schema
@@ -67,7 +73,7 @@ export async function POST(request: Request): Promise<ExpoApiResponse<WorkoutsRe
     newWorkout.title,
     newWorkout.duration,
     newWorkout.user_id,
-    newWorkout.exercises // Pass exercises to the function
+    newWorkout.exercises, // Pass exercises to the function
   );
 
   if (!workout) {

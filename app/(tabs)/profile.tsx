@@ -1,11 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, Button, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  Button,
+  ActivityIndicator,
+} from 'react-native';
 import { colors } from '../../constants/colors';
 import { useRouter } from 'expo-router';
 
 type UserData = {
   username: string;
   workouts: Array<any>;
+  workoutCount: number;
   createdAt: string;
 };
 
@@ -18,9 +26,10 @@ const UserProfile = () => {
     async function fetchUserData() {
       try {
         const response = await fetch('/api/user', {
-          credentials: 'include', // Ensure cookies are sent
+          credentials: 'include',
         });
         const data: UserData = await response.json();
+        //console.warn('API Response:', data);
         setUserData(data);
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -44,7 +53,11 @@ const UserProfile = () => {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>Failed to load user data</Text>
-        <Button title="Retry" onPress={() => router.replace('/profile')} color="#007aff" />
+        <Button
+          title="Retry"
+          onPress={() => router.replace('/profile')}
+          color="#007aff"
+        />
       </View>
     );
   }
@@ -61,13 +74,14 @@ const UserProfile = () => {
 
       <View style={styles.statsContainer}>
         <View style={styles.statBox}>
-          {/* <Text style={styles.statNumber}>{workouts.length}</Text> */}
+          <Text style={styles.statNumber}>{userData.workoutCount || 0}</Text>
           <Text style={styles.statLabel}>Workouts</Text>
         </View>
         <View style={styles.statBox}>
-          <Text style={styles.statNumber}>
-            {new Date(createdAt).toLocaleDateString()}
-          </Text>
+        <Text style={styles.statNumber}>
+        {createdAt || 'N/A'}
+</Text>
+
           <Text style={styles.statLabel}>Account Created</Text>
         </View>
       </View>

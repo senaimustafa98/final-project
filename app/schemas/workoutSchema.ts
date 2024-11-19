@@ -11,9 +11,9 @@ export const workoutSchema = z.object({
         z.object({
           reps: z.number(),
           weight: z.number(),
-        })
+        }),
       ),
-    })
+    }),
   ),
 });
 

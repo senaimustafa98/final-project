@@ -29,14 +29,18 @@ type Workout = {
 
 const WorkoutHistory = () => {
   const [workouts, setWorkouts] = useState<Workout[]>([]);
-  const [expandedWorkoutIndex, setExpandedWorkoutIndex] = useState<null | number>(null);
+  const [expandedWorkoutIndex, setExpandedWorkoutIndex] = useState<
+    null | number
+  >(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   const fetchWorkoutsForUser = useCallback(async () => {
     setLoading(true);
     try {
       // Fetch the current user
-      const userResponse = await fetch('/api/user+api.ts', { credentials: 'include' });
+      const userResponse = await fetch('/api/user+api.ts', {
+        credentials: 'include',
+      });
       if (!userResponse.ok) {
         throw new Error('Failed to fetch user');
       }
@@ -64,14 +68,18 @@ const WorkoutHistory = () => {
       async function fetchWorkoutsForUser() {
         setLoading(true);
         try {
-          const userResponse = await fetch('/api/user', { credentials: 'include' });
+          const userResponse = await fetch('/api/user', {
+            credentials: 'include',
+          });
           const userData = await userResponse.json();
 
           if (!userResponse.ok || !userData.id) {
             throw new Error('Failed to fetch user ID');
           }
 
-          const workoutResponse = await fetch(`/api/workouts?user_id=${userData.id}`);
+          const workoutResponse = await fetch(
+            `/api/workouts?user_id=${userData.id}`,
+          );
           if (!workoutResponse.ok) {
             throw new Error('Failed to fetch workouts');
           }
@@ -94,7 +102,7 @@ const WorkoutHistory = () => {
       return () => {
         isActive = false;
       };
-    }, [])
+    }, []),
   );
 
   const toggleExpand = (index: number) => {

@@ -39,7 +39,7 @@ export async function getWorkouts(user_id: number): Promise<Workout[]> {
           ...workout,
           exercises: exercises || [], // Ensure exercises is always an array
         };
-      })
+      }),
     );
 
     return result as Workout[];
@@ -49,13 +49,12 @@ export async function getWorkouts(user_id: number): Promise<Workout[]> {
   }
 }
 
-
 // Create a new workout and insert related exercises
 export async function createWorkout(
   title: string,
   duration: string | null,
   user_id: number,
-  exercises: { name: string; sets: { reps: number; weight: number }[] }[]
+  exercises: { name: string; sets: { reps: number; weight: number }[] }[],
 ): Promise<Workout | null> {
   if (!title || !user_id) throw new Error('Title and User ID are required');
   try {
@@ -81,15 +80,32 @@ export async function createWorkout(
     // Insert exercises related to this workout
     for (let exercise of exercises) {
       await sql`
-        INSERT INTO exercises (workout_id, name, sets)
-        VALUES (${workout.id}, ${exercise.name}, ${JSON.stringify(exercise.sets)});
+        INSERT INTO
+          exercises (workout_id, name, sets)
+        VALUES
+          (
+            ${workout.id},
+            ${exercise.name},
+            ${JSON.stringify(exercise.sets)}
+          );
       `;
     }
 
     // Fetch and return the workout with exercises attached
     const workoutWithExercises = await sql`
-      SELECT * FROM workouts WHERE id = ${workout.id};
-      SELECT * FROM exercises WHERE workout_id = ${workout.id};
+      SELECT
+        *
+      FROM
+        workouts
+      WHERE
+        id = ${workout.id};
+
+      SELECT
+        *
+      FROM
+        exercises
+      WHERE
+        workout_id = ${workout.id};
     `;
 
     workout.exercises = workoutWithExercises[1] || []; // Ensure exercises is always an array

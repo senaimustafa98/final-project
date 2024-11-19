@@ -5,7 +5,7 @@ type UserWithPasswordHash = User & {
   passwordHash: string;
 };
 export async function getUser(sessionToken: Session['token']) {
-  const [user] = await sql<Pick<User, 'id' | 'username' | 'created_at' >[]>`
+  const [user] = await sql<Pick<User, 'id' | 'username' | 'created_at'>[]>`
     SELECT
       users.id,
       users.username,
@@ -62,6 +62,31 @@ export async function getUserWithPasswordHashInsecure(
       users
     WHERE
       username = ${username.toLowerCase()}
+  `;
+  return user;
+}
+
+export async function getUserWithWorkoutCount(sessionToken: Session['token']) {
+  const [user] = await sql<{
+    id: number;
+    username: string;
+    created_at: string;
+    workout_count: number;
+  }[]>`
+    SELECT
+      users.id,
+      users.username,
+      to_char(users.created_at, 'YYYY-MM-DD') AS created_at,
+      COALESCE(COUNT(workouts.id), 0) AS workout_count
+    FROM
+      users
+    LEFT JOIN workouts ON workouts.user_id = users.id
+    INNER JOIN sessions ON (
+      sessions.token = ${sessionToken}
+      AND users.id = sessions.user_id
+      AND expiry_timestamp > now()
+    )
+    GROUP BY users.id, users.username;
   `;
   return user;
 }

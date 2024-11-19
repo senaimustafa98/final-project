@@ -4,7 +4,7 @@ export type User = {
   id: number;
   username: string;
   passwordHash: string;
-  created_at: string
+  created_at: string;
 };
 export const userSchema = z.object({
   username: z.string().min(3),
