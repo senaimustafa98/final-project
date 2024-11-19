@@ -1,10 +1,9 @@
-import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { View, Text, TextInput, Alert, StyleSheet } from 'react-native';
-import { colors } from '../../constants/colors';
+import { useRouter } from 'expo-router';
 import CustomButton from '../../components/CustomButton';
+import { colors } from '../../constants/colors';
 import { Link } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 
 const styles = StyleSheet.create({
   container: {
@@ -71,13 +70,20 @@ const SignUp = () => {
       const result = await response.json();
 
       if (response.ok) {
-        Alert.alert('Account created successfully!');
-        router.push('/login');
+        Alert.alert('Account created successfully!', '', [
+          {
+            text: 'OK',
+            onPress: () => router.push('/login'),
+          },
+        ]);
+        setUsername('');
+        setPassword('');
       } else {
         Alert.alert('Error', result.error || 'Registration failed');
       }
     } catch (error) {
       Alert.alert('Network error', 'Please try again later');
+      console.error('Error during registration:', error);
     }
   };
 
@@ -107,7 +113,6 @@ const SignUp = () => {
       <Text style={styles.goBackText} onPress={() => router.push('/(auth)')}>
         Go Back
       </Text>
-      <StatusBar style="light" />
     </View>
   );
 };

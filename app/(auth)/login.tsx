@@ -1,6 +1,7 @@
-import { useRouter, Link } from 'expo-router';
-import React, { useState } from 'react';
+import { useRouter, Link, useLocalSearchParams } from 'expo-router';
+import React, { useState, useCallback } from 'react';
 import { View, Text, TextInput, Alert, StyleSheet } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import CustomButton from '../../components/CustomButton';
 import { colors } from '../../constants/colors';
 
@@ -48,11 +49,36 @@ const styles = StyleSheet.create({
 
 const Login = () => {
   const router = useRouter();
+  const { returnTo } = useLocalSearchParams<{ returnTo: string }>();
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
+  // Check if the user is already logged in
+  useFocusEffect(
+    useCallback(() => {
+      async function checkSession() {
+        try {
+          const response = await fetch('/api/user', { credentials: 'include' });
+          const responseBody = await response.json();
+
+          if (response.ok && 'username' in responseBody) {
+            // Redirect to the original route or fallback
+            if (returnTo && typeof returnTo === 'string') {
+              router.replace('/(auth)'); // Redirect to index.tsx
+            }
+          }
+        } catch (error) {
+          console.error('Error checking session:', error);
+        }
+      }
+
+      checkSession();
+    }, [returnTo]),
+  );
+
+  // Handle user login
   const handleLogin = async () => {
-    if (username === '' || password === '') {
+    if (!username || !password) {
       Alert.alert('Please enter both username and password');
       return;
     }
@@ -69,12 +95,13 @@ const Login = () => {
       const result = await response.json();
 
       if (response.ok) {
-        Alert.alert('Login successful!', '', [
-          {
-            text: 'OK',
-            onPress: () => router.push('/(tabs)/profile'),
-          },
-        ]);
+        // Clear inputs and redirect after successful login
+        setUsername('');
+        setPassword('');
+        if (returnTo && typeof returnTo === 'string') {
+
+          router.replace('/(tabs)/profile');
+        }
       } else {
         Alert.alert('Login failed', result.error || 'Invalid credentials');
       }
