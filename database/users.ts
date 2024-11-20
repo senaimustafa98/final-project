@@ -5,11 +5,11 @@ type UserWithPasswordHash = User & {
   passwordHash: string;
 };
 export async function getUser(sessionToken: Session['token']) {
-  const [user] = await sql<Pick<User, 'id' | 'username' | 'created_at'>[]>`
+  const [user] = await sql<Pick<User, 'id' | 'username' | 'createdAt'>[]>`
     SELECT
       users.id,
       users.username,
-      users.created_at
+      to_char(users.created_at, 'YYYY-MM-DD') AS "createdAt"
     FROM
       users
       INNER JOIN sessions ON (
@@ -25,7 +25,7 @@ export async function getUserInsecure(username: User['username']) {
     SELECT
       users.id,
       users.username,
-      users.created_at
+      to_char(users.created_at, 'YYYY-MM-DD') AS "createdAt"
     FROM
       users
     WHERE
@@ -48,7 +48,7 @@ export async function createUserInsecure(
     RETURNING
       users.id,
       users.username,
-      users.created_at
+      to_char(users.created_at, 'YYYY-MM-DD') AS "createdAt"
   `;
   return user;
 }
@@ -70,14 +70,14 @@ export async function getUserWithWorkoutCount(sessionToken: Session['token']) {
   const [user] = await sql<{
     id: number;
     username: string;
-    created_at: string;
-    workout_count: number;
+    createdAt: string;
+    workoutCount: number;
   }[]>`
     SELECT
       users.id,
       users.username,
-      to_char(users.created_at, 'YYYY-MM-DD') AS created_at,
-      COALESCE(COUNT(workouts.id), 0) AS workout_count
+      to_char(users.created_at, 'YYYY-MM-DD') AS "createdAt",
+      COALESCE(COUNT(workouts.id), 0) AS "workoutCount"
     FROM
       users
     LEFT JOIN workouts ON workouts.user_id = users.id
@@ -88,6 +88,6 @@ export async function getUserWithWorkoutCount(sessionToken: Session['token']) {
     )
     GROUP BY users.id, users.username;
   `;
-  console.warn('User from Database Query:', user);
+  //console.warn('User from Database Query:', user);
   return user;
 }

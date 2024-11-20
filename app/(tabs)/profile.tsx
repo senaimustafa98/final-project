@@ -15,7 +15,7 @@ type UserData = {
   username: string;
   workouts: Array<any>;
   workoutCount: number | null;
-  createdAt: string | null;
+  createdAt: string;
 };
 
 const UserProfile = () => {
@@ -31,8 +31,12 @@ const UserProfile = () => {
         });
         const data: UserData = await response.json();
         // Debug
-        console.warn('API Response:', data);
-        setUserData(data);
+        //console.warn('API Response in frontend:', data);
+        setUserData({
+          ...data,
+          workoutCount: data.workoutCount || 0,
+          createdAt: data.createdAt,
+        });
       } catch (error) {
         console.error('Error fetching user data:', error);
       } finally {
@@ -42,37 +46,6 @@ const UserProfile = () => {
 
     fetchUserData();
   }, []);
-
- /*  useEffect(() => {
-    async function fetchUserData() {
-      try {
-        const response = await fetch('/api/user', {
-          credentials: 'include',
-        });
-
-        // Raw response
-        const rawData = await response.json();
-        console.warn('Raw API Response:', rawData);
-
-        // Ensure correct data assignment
-        const data: UserData = {
-          username: rawData.username,
-          workouts: [],
-          workoutCount: rawData.workoutCount || 0,
-          createdAt: rawData.createdAt || 'N/A',
-        };
-
-        console.warn('Processed UserData:', data);
-        setUserData(data);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchUserData();
-  }, []); */
 
 
   if (loading) {
@@ -114,7 +87,7 @@ const UserProfile = () => {
         </View>
         <View style={styles.statBox}>
         <Text style={styles.statNumber}>
-        {createdAt || 'N/A'}
+        {createdAt}
 </Text>
 
           <Text style={styles.statLabel}>Account Created</Text>
