@@ -26,16 +26,18 @@ export async function GET(
   }
 
   const user = token && (await getUserWithWorkoutCount(token));
-  //console.warn('User from getUserWithWorkoutCount:', user);
+  console.warn('User from getUserWithWorkoutCount:', user);
 
   if (!user) {
     return ExpoApiResponse.json({ error: 'User not found' });
   }
+   console.warn('User Data to be sent from API:', user);
+
 
   return ExpoApiResponse.json({
     id: user.id,
     username: user.username,
-    createdAt: user.created_at,
-    workoutCount: user.workout_count,
+    createdAt: user.created_at || 'N/A',
+    workoutCount: Number(user.workout_count) || 0,
   });
 }

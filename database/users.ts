@@ -88,5 +88,6 @@ export async function getUserWithWorkoutCount(sessionToken: Session['token']) {
     )
     GROUP BY users.id, users.username;
   `;
+  console.warn('User from Database Query:', user);
   return user;
 }

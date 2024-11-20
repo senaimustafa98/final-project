@@ -11,10 +11,11 @@ import { colors } from '../../constants/colors';
 import { useRouter } from 'expo-router';
 
 type UserData = {
+  id: number;
   username: string;
   workouts: Array<any>;
-  workoutCount: number;
-  createdAt: string;
+  workoutCount: number | null;
+  createdAt: string | null;
 };
 
 const UserProfile = () => {
@@ -29,7 +30,8 @@ const UserProfile = () => {
           credentials: 'include',
         });
         const data: UserData = await response.json();
-        //console.warn('API Response:', data);
+        // Debug
+        console.warn('API Response:', data);
         setUserData(data);
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -40,6 +42,38 @@ const UserProfile = () => {
 
     fetchUserData();
   }, []);
+
+ /*  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const response = await fetch('/api/user', {
+          credentials: 'include',
+        });
+
+        // Raw response
+        const rawData = await response.json();
+        console.warn('Raw API Response:', rawData);
+
+        // Ensure correct data assignment
+        const data: UserData = {
+          username: rawData.username,
+          workouts: [],
+          workoutCount: rawData.workoutCount || 0,
+          createdAt: rawData.createdAt || 'N/A',
+        };
+
+        console.warn('Processed UserData:', data);
+        setUserData(data);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchUserData();
+  }, []); */
+
 
   if (loading) {
     return (
@@ -62,7 +96,8 @@ const UserProfile = () => {
     );
   }
 
-  const { username, workouts, createdAt } = userData;
+  const { username, workouts, createdAt, workoutCount } = userData;
+
 
   return (
     <View style={styles.container}>
