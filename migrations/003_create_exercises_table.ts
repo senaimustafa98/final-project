@@ -5,9 +5,9 @@ import { z } from 'zod';
 export const exerciseSchema = z.object({
   workoutId: z.number(),
   name: z.string(),
-  sets: z.array(z.number()).optional(),
-  reps: z.array(z.number()).optional(),
-  weights: z.array(z.number()).optional(),
+  setNumber: z.number(),
+  reps: z.number(),
+  weight: z.number(),
 });
 
 // Migration to create the `exercises` table
@@ -17,9 +17,9 @@ export async function up(sql: Sql) {
       id integer PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
       workout_id integer REFERENCES workouts (id) ON DELETE cascade,
       name varchar(50) NOT NULL,
-      sets INTEGER[],
-      reps INTEGER[],
-      weights INTEGER[]
+      set_number integer NOT NULL,
+      reps integer NOT NULL,
+      weight integer NOT NULL
     )
   `;
 }

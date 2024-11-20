@@ -1,48 +1,66 @@
 import { sql } from './connect';
 
+export type Exercise = {
+  id: number;
+  workoutId: number;
+  name: string;
+  setNumber: number;
+  reps: number;
+  weight: number;
+};
+
 export type Workout = {
   id: number;
   title: string;
-  created_at: Date;
+  createdAt: Date;
   duration: string | null;
-  user_id: number;
-  exercises: Exercise[]; // Ensure exercises are included in the Workout type
-};
-
-export type Exercise = {
-  id: number;
-  workout_id: number;
-  name: string;
-  set_number: number;
-  reps: number;
-  weight: number | null;
-  sets: { reps: number; weight: number }[];
+  userId: number;
+  exercises: {
+    name: string;
+    sets: { reps: number; weight: number }[];
+  }[];
 };
 
 // Fetch all workouts for a specific user, including exercises
-export async function getWorkouts(user_id: number): Promise<Workout[]> {
+export async function getWorkouts(userId: number): Promise<Workout[]> {
   try {
-    const workouts = await sql`
+    const workouts = await sql<Workout[]>`
       SELECT
-        *
+        id,
+        title,
+        created_at AS "createdAt",
+        duration,
+        user_id AS "userId"
       FROM
         workouts
       WHERE
-        user_id = ${user_id};
+        user_id = ${userId};
     `;
 
-    // Fetch exercises for each workout and attach them
     const result = await Promise.all(
       workouts.map(async (workout) => {
         const exercises = await getExercisesByWorkoutId(workout.id);
+        // Group exercises by name and transform into the expected structure
+        const groupedExercises = exercises.reduce((acc, exercise) => {
+          const existing = acc.find((e) => e.name === exercise.name);
+          if (existing) {
+            existing.sets.push({ reps: exercise.reps, weight: exercise.weight });
+          } else {
+            acc.push({
+              name: exercise.name,
+              sets: [{ reps: exercise.reps, weight: exercise.weight }],
+            });
+          }
+          return acc;
+        }, [] as Workout['exercises']);
         return {
           ...workout,
-          exercises: exercises || [], // Ensure exercises is always an array
+          exercises: groupedExercises,
         };
       }),
     );
 
-    return result as Workout[];
+    return result;
   } catch (error) {
     console.error('Error fetching workouts:', error);
     return [];
@@ -53,23 +71,22 @@ export async function getWorkouts(user_id: number): Promise<Workout[]> {
 export async function createWorkout(
   title: string,
   duration: string | null,
-  user_id: number,
+  userId: number,
   exercises: { name: string; sets: { reps: number; weight: number }[] }[],
 ): Promise<Workout | null> {
-  if (!title || !user_id) throw new Error('Title and User ID are required');
+  if (!title || !userId) throw new Error('Title and User ID are required');
   try {
-    // Insert the workout into the workouts table
-    const [workout] = await sql`
+    const [workout] = await sql<Workout[]>`
       INSERT INTO
         workouts (title, duration, user_id)
       VALUES
-        (
-          ${title},
-          ${duration},
-          ${user_id}
-        )
+        (${title}, ${duration}, ${userId})
       RETURNING
-        *;
+        id,
+        title,
+        created_at AS "createdAt",
+        duration,
+        user_id AS "userId";
     `;
 
     if (!workout) {
@@ -79,65 +96,25 @@ export async function createWorkout(
 
     // Insert exercises related to this workout
     for (let exercise of exercises) {
-      await sql`
-        INSERT INTO
-          exercises (workout_id, name, sets)
-        VALUES
-          (
-            ${workout.id},
-            ${exercise.name},
-            ${JSON.stringify(exercise.sets)}
-          );
-      `;
+      for (let [index, set] of exercise.sets.entries()) {
+        await sql`
+          INSERT INTO
+            exercises (workout_id, name, set_number, reps, weight)
+          VALUES
+            (${workout.id}, ${exercise.name}, ${index + 1}, ${set.reps}, ${set.weight});
+        `;
+      }
     }
 
-    // Fetch and return the workout with exercises attached
-    const workoutWithExercises = await sql`
-      SELECT
-        *
-      FROM
-        workouts
-      WHERE
-        id = ${workout.id};
+    const workoutWithExercises = await getExercisesByWorkoutId(workout.id);
+    workout.exercises = workoutWithExercises.map((exercise) => ({
+      name: exercise.name,
+      sets: [{ reps: exercise.reps, weight: exercise.weight }],
+    }));
 
-      SELECT
-        *
-      FROM
-        exercises
-      WHERE
-        workout_id = ${workout.id};
-    `;
-
-    workout.exercises = workoutWithExercises[1] || []; // Ensure exercises is always an array
-    return workout as Workout;
+    return workout;
   } catch (error) {
     console.error('Error creating workout:', error);
-    return null;
-  }
-}
-// Fetch a specific workout by ID, including its exercises
-export async function getWorkoutById(id: number): Promise<Workout | null> {
-  try {
-    const [workout] = await sql`
-      SELECT
-        *
-      FROM
-        workouts
-      WHERE
-        id = ${id};
-    `;
-
-    if (!workout) {
-      return null;
-    }
-
-    // Fetch exercises associated with the workout
-    const exercises = await getExercisesByWorkoutId(id);
-    workout.exercises = exercises;
-
-    return workout as Workout;
-  } catch (error) {
-    console.error('Error fetching workout by ID:', error);
     return null;
   }
 }
@@ -147,9 +124,14 @@ export async function getExercisesByWorkoutId(
   workoutId: number,
 ): Promise<Exercise[]> {
   try {
-    const exercises = await sql`
+    const exercises = await sql<Exercise[]>`
       SELECT
-        *
+        id,
+        workout_id AS "workoutId",
+        name,
+        set_number AS "setNumber",
+        reps,
+        weight
       FROM
         exercises
       WHERE
@@ -157,56 +139,14 @@ export async function getExercisesByWorkoutId(
       ORDER BY
         set_number ASC;
     `;
-    return exercises.map((row) => ({
-      id: row.id,
-      workout_id: row.workout_id,
-      name: row.name,
-      set_number: row.set_number,
-      reps: row.reps,
-      weight: row.weight,
-    })) as Exercise[];
+
+    // Ensure all exercises include sets
+    return exercises.map((exercise) => ({
+      ...exercise,
+      sets: [{ reps: exercise.reps, weight: exercise.weight }],
+    }));
   } catch (error) {
     console.error('Error fetching exercises by workout ID:', error);
     return [];
-  }
-}
-
-// Update a workout title and duration
-export async function updateWorkout(
-  id: number,
-  title: string,
-  duration: string | null,
-): Promise<Workout | null> {
-  if (!title) throw new Error('Title is required');
-  try {
-    const [updatedWorkout] = await sql`
-      UPDATE workouts
-      SET
-        title = ${title},
-        duration = ${duration}
-      WHERE
-        id = ${id}
-      RETURNING
-        *;
-    `;
-    return updatedWorkout ? (updatedWorkout as Workout) : null;
-  } catch (error) {
-    console.error('Error updating workout:', error);
-    return null;
-  }
-}
-
-// Delete a workout by ID
-export async function deleteWorkout(id: number): Promise<boolean> {
-  try {
-    const result = await sql`
-      DELETE FROM workouts
-      WHERE
-        id = ${id};
-    `;
-    return result.count > 0; // If any rows were deleted, return true
-  } catch (error) {
-    console.error('Error deleting workout:', error);
-    return false;
   }
 }

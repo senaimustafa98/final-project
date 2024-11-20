@@ -17,6 +17,7 @@ type SelectedExercise = (typeof exercises)[0] & {
 };
 
 const StartWorkout = () => {
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [workoutTitle, setWorkoutTitle] = useState('My Workout');
@@ -25,6 +26,27 @@ const StartWorkout = () => {
     SelectedExercise[]
   >([]);
   const [saving, setSaving] = useState(false);
+
+
+  useEffect(() => {
+    async function fetchUserId() {
+      try {
+        const response = await fetch('/api/user', {
+          credentials: 'include',
+        });
+        const data = await response.json();
+        if (data?.id) {
+          setCurrentUserId(data.id);
+        } else {
+          console.error('User ID not found in response:', data);
+        }
+      } catch (error) {
+        console.error('Error fetching user ID:', error);
+      }
+    }
+
+    fetchUserId();
+  }, []);
 
   useEffect(() => {
     if (isRunning) {
@@ -111,25 +133,30 @@ const StartWorkout = () => {
 
   // Save workout to backend
   const saveWorkout = async () => {
+    if (!currentUserId) {
+      alert('User ID is missing. Please try again.');
+      return;
+    }
+
     setSaving(true);
     try {
       const workoutData = {
         title: workoutTitle,
         duration: formatTime(seconds),
+        userId: currentUserId, // Use the fetched user ID here
         exercises: selectedExercises.map((exercise) => ({
           name: exercise.name,
           sets: exercise.sets,
         })),
       };
 
-      const response = await fetch(
-        'http://192.168.68.50:3000/api/workouts/createWorkout',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(workoutData),
-        },
-      );
+      //console.warn('Workout Data:', workoutData); // Debugging log
+
+      const response = await fetch('/api/workouts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(workoutData),
+      });
 
       if (response.ok) {
         alert('Workout saved successfully!');
@@ -137,6 +164,8 @@ const StartWorkout = () => {
         setSelectedExercises([]);
         setSeconds(0);
       } else {
+        const errorResponse = await response.json();
+        console.error('Error saving workout:', errorResponse);
         alert('Failed to save workout.');
       }
     } catch (error) {

@@ -1,6 +1,9 @@
 import { getWorkouts, createWorkout } from '../../../database/workouts';
+import { parse } from 'cookie';
+import { getUserWithWorkoutCount } from '../../../database/users';
 import { ExpoApiResponse } from '../../../util/ExpoApiResponse';
-import { type Workout, workoutSchema } from '../../schemas/workoutSchema';
+import { workoutSchema, type Workout } from '../../schemas/workoutSchema';
+
 
 // Define the response type for GET requests (success)
 export type WorkoutsResponseBodyGet = {
@@ -13,27 +16,6 @@ export type ErrorResponseBody = {
   errorIssues?: { message: string }[];
 };
 
-// Handle GET request to fetch all workouts for a specific user
-export async function GET(
-  request: Request,
-): Promise<ExpoApiResponse<WorkoutsResponseBodyGet | ErrorResponseBody>> {
-  const url = new URL(request.url);
-  const user_id = Number(url.searchParams.get('user_id')); // Extract user_id from query params
-
-  if (!user_id) {
-    return ExpoApiResponse.json(
-      { error: 'User ID is required' },
-      { status: 400 },
-    );
-  }
-
-  const workouts = await getWorkouts(user_id);
-
-  return ExpoApiResponse.json({
-    workouts: workouts,
-  });
-}
-
 // Define the response type for POST requests (success)
 export type WorkoutsResponseBodyPost =
   | {
@@ -41,10 +23,47 @@ export type WorkoutsResponseBodyPost =
     }
   | ErrorResponseBody;
 
+// Handle GET request to fetch all workouts for a specific user
+export async function GET(
+  request: Request,
+): Promise<ExpoApiResponse<WorkoutsResponseBodyGet | ErrorResponseBody>> {
+  const cookies = parse(request.headers.get('cookie') || '');
+  const token = cookies.sessionToken;
+
+  if (!token) {
+    return ExpoApiResponse.json({ error: 'No session token found' }, { status: 401 });
+  }
+
+  const user = await getUserWithWorkoutCount(token);
+
+  if (!user) {
+    return ExpoApiResponse.json({ error: 'User not authenticated' }, { status: 403 });
+  }
+
+  const workouts = await getWorkouts(user.id);
+
+  return ExpoApiResponse.json({
+    workouts,
+  });
+}
+
 // Handle POST request to create a new workout
 export async function POST(
   request: Request,
 ): Promise<ExpoApiResponse<WorkoutsResponseBodyPost>> {
+  const cookies = parse(request.headers.get('cookie') || '');
+  const token = cookies.sessionToken;
+
+  if (!token) {
+    return ExpoApiResponse.json({ error: 'No session token found' }, { status: 401 });
+  }
+
+  const user = await getUserWithWorkoutCount(token);
+
+  if (!user) {
+    return ExpoApiResponse.json({ error: 'User not authenticated' }, { status: 403 });
+  }
+
   const requestBody = await request.json();
 
   // Validate the request body using the workout schema
@@ -65,15 +84,21 @@ export async function POST(
   const newWorkout = {
     title: result.data.title,
     duration: result.data.duration,
-    user_id: result.data.user_id, // Ensure user_id is included in the request
-    exercises: result.data.exercises, // Include exercises from the request
+    userId: result.data.userId,
+    exercises: result.data.exercises.map((exercise) => ({
+      name: exercise.name,
+      sets: exercise.sets.map((set) => ({
+        reps: set.reps,
+        weight: set.weight ?? 0, // Default to 0 if null
+      })),
+    })),
   };
 
   const workout = await createWorkout(
     newWorkout.title,
     newWorkout.duration,
-    newWorkout.user_id,
-    newWorkout.exercises, // Pass exercises to the function
+    newWorkout.userId,
+    newWorkout.exercises,
   );
 
   if (!workout) {
@@ -87,8 +112,5 @@ export async function POST(
     );
   }
 
-  // Explicitly ensure exercises is always an array, even if it's undefined
-  workout.exercises = workout.exercises || []; // If exercises is undefined, set it as an empty array
-
-  return ExpoApiResponse.json({ workout: workout });
+  return ExpoApiResponse.json({ workout });
 }
