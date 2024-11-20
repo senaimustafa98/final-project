@@ -95,7 +95,7 @@ const UserProfile = () => {
       </View>
 
       <View style={styles.buttonContainer}>
-        <View style={styles.buttonWrapper}>
+      <View style={styles.buttonWrapper}>
           <Button title="Edit Profile" onPress={() => {}} color="#007aff" />
         </View>
         <View style={styles.buttonWrapper}>
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     paddingTop: 60,
-    backgroundColor: 'white',
+    backgroundColor: '#1c1c1e',
   },
   profileImage: {
     width: 100,
@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   statLabel: {
-    fontSize: 14,
+    fontSize: 24,
     color: 'gray',
   },
   buttonContainer: {

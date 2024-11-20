@@ -1,6 +1,7 @@
 import React from 'react';
 import { Tabs, useSegments } from 'expo-router';
-import { FontAwesome } from '@expo/vector-icons';
+import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+
 
 export default function RootLayout() {
   const segments = useSegments();
@@ -32,7 +33,7 @@ export default function RootLayout() {
         options={{
           tabBarLabel: 'Workout',
           tabBarIcon: ({ color, size }) => (
-            <FontAwesome name="circle" color={color} size={size} />
+            <FontAwesome5 name="dumbbell" color={color} size={size} />
           ),
         }}
       />
