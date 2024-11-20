@@ -301,7 +301,7 @@ const StartWorkout = () => {
         style={styles.addExerciseButton}
         onPress={handleAddExercise}
       >
-        <Text style={styles.buttonText}>Add Exercise</Text>
+        <Text style={styles.buttonAddExerciseText}>Add Exercise</Text>
       </TouchableOpacity>
 
       <Modal
@@ -345,8 +345,9 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 5,
     marginHorizontal: 5,
+    width: '30%',
   },
-  buttonText: { fontSize: 12, fontWeight: 'bold', color: 'white' },
+  buttonText: { fontSize: 12, fontWeight: 'bold', color: 'white', textAlign:'center', },
   scrollContainer: {
     paddingHorizontal: 20,
     alignItems: 'center',
@@ -420,12 +421,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   addExerciseButton: {
-    backgroundColor: '#ff914d',
+    backgroundColor: 'skyblue',
     padding: 12,
     borderRadius: 10,
     position: 'absolute',
     bottom: 20,
     alignSelf: 'center',
+    width: '30%',
   },
   modalContainer: {
     flex: 1,
@@ -478,6 +480,13 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
   },
+  buttonAddExerciseText: {
+    textAlign: 'center',
+    color: 'white',
+    fontWeight: 'bold',
+  },
+
 });
+
 
 export default StartWorkout;
