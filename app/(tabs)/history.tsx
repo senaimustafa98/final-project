@@ -22,7 +22,7 @@ type Exercise = {
 type Workout = {
   id: number;
   title: string;
-  created_at: string;
+  createdAt: string;
   duration: string | null;
   exercises: Exercise[];
 };
@@ -120,7 +120,7 @@ const WorkoutHistory = () => {
             <View key={workout.id} style={styles.workoutItem}>
               <TouchableOpacity onPress={() => toggleExpand(index)}>
                 <Text style={styles.workoutDate}>
-                  {new Date(workout.created_at).toLocaleDateString()}
+                  {new Date(workout.createdAt).toLocaleDateString()}
                 </Text>
                 <Text style={styles.workoutDetail}>
                   {`${workout.title} - ${workout.duration || 'Unknown duration'}`}

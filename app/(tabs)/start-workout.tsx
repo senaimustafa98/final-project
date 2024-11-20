@@ -163,6 +163,7 @@ const StartWorkout = () => {
         setWorkoutTitle('My Workout');
         setSelectedExercises([]);
         setSeconds(0);
+        handleReset();
       } else {
         const errorResponse = await response.json();
         console.error('Error saving workout:', errorResponse);

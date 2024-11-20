@@ -28,7 +28,7 @@ export async function getWorkouts(userId: number): Promise<Workout[]> {
       SELECT
         id,
         title,
-        created_at AS "createdAt",
+        to_char(created_at, 'YYYY-MM-DD') AS "createdAt",
         duration,
         user_id AS "userId"
       FROM
