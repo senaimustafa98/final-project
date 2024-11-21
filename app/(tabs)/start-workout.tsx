@@ -9,11 +9,17 @@ import {
   Image,
   Modal,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
-import { exercises } from '../../database/Exercises';
 
-type SelectedExercise = (typeof exercises)[0] & {
-  sets: { reps: number; weight: number }[];
+type ExerciseSet = {
+  reps: number;
+  weight: number;
+};
+
+type SelectedExercise = {
+  name: string;
+  sets: ExerciseSet[];
 };
 
 const StartWorkout = () => {
@@ -22,18 +28,15 @@ const StartWorkout = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [workoutTitle, setWorkoutTitle] = useState('My Workout');
   const [showExerciseList, setShowExerciseList] = useState(false);
-  const [selectedExercises, setSelectedExercises] = useState<
-    SelectedExercise[]
-  >([]);
+  const [selectedExercises, setSelectedExercises] = useState<SelectedExercise[]>([]);
+  const [exercises, setExercises] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
-
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function fetchUserId() {
       try {
-        const response = await fetch('/api/user', {
-          credentials: 'include',
-        });
+        const response = await fetch('/api/user', { credentials: 'include' });
         const data = await response.json();
         if (data?.id) {
           setCurrentUserId(data.id);
@@ -45,7 +48,32 @@ const StartWorkout = () => {
       }
     }
 
+    async function fetchExercises() {
+      try {
+        setLoading(true);
+        const response = await fetch('https://exercisedb.p.rapidapi.com/exercises?limit=20', {
+          method: 'GET',
+          headers: {
+            'x-rapidapi-host': 'exercisedb.p.rapidapi.com',
+            'x-rapidapi-key': '013ceceb96msh45a7b1f9e468beap1e9cc3jsn62455b38ada3',
+          },
+        });
+        const data = await response.json();
+
+         // Log the fetched exercises
+        console.log('Fetched exercises:', data);
+
+
+        setExercises(data); // Save exercises data
+      } catch (error) {
+        console.error('Error fetching exercises from API:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
     fetchUserId();
+    fetchExercises();
   }, []);
 
   useEffect(() => {
@@ -73,9 +101,9 @@ const StartWorkout = () => {
 
   const handleAddExercise = () => setShowExerciseList(true);
 
-  const handleSelectExercise = (exercise: (typeof exercises)[0]) => {
+  const handleSelectExercise = (exercise: any) => {
     const newExercise: SelectedExercise = {
-      ...exercise,
+      name: exercise.name,
       sets: [{ reps: 0, weight: 0 }],
     };
     setSelectedExercises((prevExercises) => [...prevExercises, newExercise]);
@@ -84,7 +112,7 @@ const StartWorkout = () => {
 
   const handleRemoveExercise = (index: number) => {
     setSelectedExercises((prevExercises) =>
-      prevExercises.filter((_, i) => i !== index),
+      prevExercises.filter((_, i) => i !== index)
     );
   };
 
@@ -93,8 +121,8 @@ const StartWorkout = () => {
       prevExercises.map((exercise, i) =>
         i === exerciseIndex
           ? { ...exercise, sets: [...exercise.sets, { reps: 0, weight: 0 }] }
-          : exercise,
-      ),
+          : exercise
+      )
     );
   };
 
@@ -102,7 +130,7 @@ const StartWorkout = () => {
     exerciseIndex: number,
     setIndex: number,
     field: 'reps' | 'weight',
-    value: number,
+    value: number
   ) => {
     setSelectedExercises((prevExercises) =>
       prevExercises.map((exercise, i) =>
@@ -110,11 +138,11 @@ const StartWorkout = () => {
           ? {
               ...exercise,
               sets: exercise.sets.map((set, j) =>
-                j === setIndex ? { ...set, [field]: value } : set,
+                j === setIndex ? { ...set, [field]: value } : set
               ),
             }
-          : exercise,
-      ),
+          : exercise
+      )
     );
   };
 
@@ -126,8 +154,8 @@ const StartWorkout = () => {
               ...exercise,
               sets: exercise.sets.filter((_, j) => j !== setIndex),
             }
-          : exercise,
-      ),
+          : exercise
+      )
     );
   };
 
@@ -143,14 +171,12 @@ const StartWorkout = () => {
       const workoutData = {
         title: workoutTitle,
         duration: formatTime(seconds),
-        userId: currentUserId, // Use the fetched user ID here
+        userId: currentUserId,
         exercises: selectedExercises.map((exercise) => ({
           name: exercise.name,
           sets: exercise.sets,
         })),
       };
-
-      //console.warn('Workout Data:', workoutData); // Debugging log
 
       const response = await fetch('/api/workouts', {
         method: 'POST',
@@ -188,16 +214,9 @@ const StartWorkout = () => {
             value={workoutTitle}
             onChangeText={setWorkoutTitle}
             placeholder="Enter Workout Title"
-            placeholderTextColor="gray"
           />
-          <TouchableOpacity
-            style={styles.saveButton}
-            onPress={saveWorkout}
-            disabled={saving}
-          >
-            <Text style={styles.saveButtonText}>
-              {saving ? 'Saving...' : 'Save'}
-            </Text>
+          <TouchableOpacity onPress={saveWorkout} disabled={saving}>
+            <Text style={styles.saveButtonText}>{saving ? 'Saving...' : 'Save'}</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.buttonContainer}>
@@ -222,10 +241,6 @@ const StartWorkout = () => {
             {selectedExercises.map((exercise, exerciseIndex) => (
               <View key={exerciseIndex} style={styles.selectedExercise}>
                 <View style={styles.exerciseHeader}>
-                  <Image
-                    source={{ uri: exercise.gifUrl }}
-                    style={styles.exerciseGif}
-                  />
                   <Text style={styles.exerciseName}>{exercise.name}</Text>
                   <TouchableOpacity
                     style={styles.removeExerciseButton}
@@ -250,12 +265,7 @@ const StartWorkout = () => {
                       keyboardType="numeric"
                       value={set.weight.toString()}
                       onChangeText={(value) =>
-                        handleSetChange(
-                          exerciseIndex,
-                          setIndex,
-                          'weight',
-                          parseInt(value) || 0,
-                        )
+                        handleSetChange(exerciseIndex, setIndex, 'weight', parseInt(value) || 0)
                       }
                     />
                     <TextInput
@@ -264,12 +274,7 @@ const StartWorkout = () => {
                       keyboardType="numeric"
                       value={set.reps.toString()}
                       onChangeText={(value) =>
-                        handleSetChange(
-                          exerciseIndex,
-                          setIndex,
-                          'reps',
-                          parseInt(value) || 0,
-                        )
+                        handleSetChange(exerciseIndex, setIndex, 'reps', parseInt(value) || 0)
                       }
                     />
                   </View>
@@ -284,9 +289,7 @@ const StartWorkout = () => {
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.removeSetButton}
-                    onPress={() =>
-                      handleRemoveSet(exerciseIndex, exercise.sets.length - 1)
-                    }
+                    onPress={() => handleRemoveSet(exerciseIndex, exercise.sets.length - 1)}
                   >
                     <Text style={styles.buttonText}>Remove Set</Text>
                   </TouchableOpacity>
@@ -301,29 +304,31 @@ const StartWorkout = () => {
         style={styles.addExerciseButton}
         onPress={handleAddExercise}
       >
-        <Text style={styles.buttonAddExerciseText}>Add Exercise</Text>
+        <Text style={styles.buttonText}>Add Exercise</Text>
       </TouchableOpacity>
 
-      <Modal
-        visible={showExerciseList}
-        animationType="slide"
-        transparent={true}
-      >
+      <Modal visible={showExerciseList} animationType="slide" transparent={true}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Select an Exercise</Text>
-            <FlatList
-              data={exercises}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.exerciseItem}
-                  onPress={() => handleSelectExercise(item)}
-                >
-                  <Text style={styles.exerciseItemText}>{item.name}</Text>
-                </TouchableOpacity>
-              )}
-            />
+            {loading ? (
+              <ActivityIndicator size="large" color="skyblue" />
+            ) : (
+              <FlatList
+                data={exercises}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.exerciseItem}
+                    onPress={() => handleSelectExercise(item)}
+                  >
+                    <Text style={styles.exerciseItemText}>{item.name}</Text>
+                  </TouchableOpacity>
+                )}
+                showsVerticalScrollIndicator={true}
+  contentContainerStyle={{ paddingBottom: 100 }}
+              />
+            )}
             <TouchableOpacity onPress={() => setShowExerciseList(false)}>
               <Text style={styles.closeButton}>Close</Text>
             </TouchableOpacity>
@@ -335,7 +340,7 @@ const StartWorkout = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#1c1c1e' },
+  container: { flex: 1, backgroundColor: '#1c1c1e', padding: 20 },
   timerContainer: { alignItems: 'center', paddingVertical: 10, marginTop: 20 },
   title: { fontSize: 18, fontWeight: 'bold', color: 'white', marginTop: '10%' },
   timer: { fontSize: 28, fontWeight: 'bold', color: 'skyblue' },
@@ -347,7 +352,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     width: '30%',
   },
-  buttonText: { fontSize: 12, fontWeight: 'bold', color: 'white', textAlign:'center', },
+  buttonText: { fontSize: 12, fontWeight: 'bold', color: 'white', textAlign: 'center' },
   scrollContainer: {
     paddingHorizontal: 20,
     alignItems: 'center',
@@ -365,12 +370,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 10,
   },
-  exerciseGif: {
-    width: 40,
-    height: 40,
-    resizeMode: 'contain',
-    marginRight: 10,
-  },
   exerciseName: { fontSize: 16, color: 'white', fontWeight: 'bold' },
   removeExerciseButton: {
     backgroundColor: 'red',
@@ -379,7 +378,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: 'auto',
   },
-
   setHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -460,6 +458,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 10,
     backgroundColor: '#1c1c1e',
+    borderRadius: 5,
+    marginBottom: 10,
   },
   titleInput: {
     flex: 1,
@@ -470,23 +470,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     marginRight: 10,
   },
-  saveButton: {
-    backgroundColor: 'skyblue',
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-  },
   saveButtonText: {
     color: 'white',
     fontWeight: 'bold',
-  },
-  buttonAddExerciseText: {
-    textAlign: 'center',
-    color: 'white',
-    fontWeight: 'bold',
+    fontSize: 16,
   },
 
 });
-
 
 export default StartWorkout;
