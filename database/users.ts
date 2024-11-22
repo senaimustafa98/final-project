@@ -1,9 +1,11 @@
 import type { User } from '../migrations/001_create_users_table';
 import type { Session } from '../migrations/004_create_session_table';
 import { sql } from './connect';
+
 type UserWithPasswordHash = User & {
   passwordHash: string;
 };
+
 export async function getUser(sessionToken: Session['token']) {
   const [user] = await sql<Pick<User, 'id' | 'username' | 'createdAt'>[]>`
     SELECT
@@ -20,6 +22,7 @@ export async function getUser(sessionToken: Session['token']) {
   `;
   return user;
 }
+
 export async function getUserInsecure(username: User['username']) {
   const [user] = await sql<User[]>`
     SELECT
@@ -33,6 +36,7 @@ export async function getUserInsecure(username: User['username']) {
   `;
   return user;
 }
+
 export async function createUserInsecure(
   username: User['username'],
   passwordHash: UserWithPasswordHash['passwordHash'],
@@ -52,6 +56,7 @@ export async function createUserInsecure(
   `;
   return user;
 }
+
 export async function getUserWithPasswordHashInsecure(
   username: User['username'],
 ) {
@@ -88,6 +93,35 @@ export async function getUserWithWorkoutCount(sessionToken: Session['token']) {
     )
     GROUP BY users.id, users.username;
   `;
-  //console.warn('User from Database Query:', user);
   return user;
+}
+
+// Function to update a user's username
+export async function updateUsernameInDB(userId: number, newUsername: string): Promise<boolean> {
+  try {
+    // Check if the username already exists and is not used by the current user
+    const [existingUser] = await sql<Pick<User, 'id'>[]>`
+      SELECT id
+      FROM users
+      WHERE username = ${newUsername.toLowerCase()} AND id != ${userId}
+    `;
+
+    if (existingUser) {
+      // Username is already taken
+      return false;
+    }
+
+    // Update the username in the database
+    const result = await sql`
+      UPDATE users
+      SET username = ${newUsername.toLowerCase()}
+      WHERE id = ${userId}
+    `;
+
+    // Check if the update affected any rows
+    return result.count > 0;
+  } catch (error) {
+    console.error('Error updating username:', error);
+    return false;
+  }
 }

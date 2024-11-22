@@ -1,5 +1,5 @@
 import { parse } from 'cookie';
-import { getUserWithWorkoutCount } from '../../database/users';
+import { getUserWithWorkoutCount, updateUsernameInDB } from '../../database/users';
 import { ExpoApiResponse } from '../../util/ExpoApiResponse';
 import type { User } from '../../migrations/001_create_users_table';
 
@@ -26,13 +26,10 @@ export async function GET(
   }
 
   const user = token && (await getUserWithWorkoutCount(token));
-  //console.warn('User from getUserWithWorkoutCount:', user);
 
   if (!user) {
     return ExpoApiResponse.json({ error: 'User not found' });
   }
-  //console.warn('User Data to be sent from API:', user);
-
 
   return ExpoApiResponse.json({
     id: user.id,
@@ -40,4 +37,50 @@ export async function GET(
     createdAt: user.createdAt,
     workoutCount: user.workoutCount || 0,
   });
+}
+
+// PATCH method to update username
+export async function PATCH(
+  request: Request,
+): Promise<ExpoApiResponse<{ username: string } | { error: string }>> {
+  const cookies = parse(request.headers.get('cookie') || '');
+  const token = cookies.sessionToken;
+
+  if (!token) {
+    return ExpoApiResponse.json({ error: 'No session token found' }, { status: 401 });
+  }
+
+  const user = token && (await getUserWithWorkoutCount(token));
+
+  if (!user) {
+    return ExpoApiResponse.json({ error: 'User not authenticated' }, { status: 403 });
+  }
+
+  try {
+    const body = await request.json();
+    const { username } = body;
+
+    // Validate new username
+    if (!username || username.length < 3 || username.length > 20) {
+      return ExpoApiResponse.json(
+        { error: 'Invalid username. Must be 3-20 characters long.' },
+        { status: 400 },
+      );
+    }
+
+    // Update username in the database
+    const updated = await updateUsernameInDB(user.id, username);
+
+    if (!updated) {
+      return ExpoApiResponse.json(
+        { error: 'Failed to update username. It may already be taken.' },
+        { status: 500 },
+      );
+    }
+
+    return ExpoApiResponse.json({ username });
+  } catch (error) {
+    console.error('Error updating username:', error);
+    return ExpoApiResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }

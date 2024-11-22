@@ -6,109 +6,11 @@ import {
   StyleSheet,
   Button,
   ActivityIndicator,
+  TextInput,
+  Alert,
 } from 'react-native';
 import { colors } from '../../constants/colors';
 import { useRouter } from 'expo-router';
-
-type UserData = {
-  id: number;
-  username: string;
-  workouts: Array<any>;
-  workoutCount: number | null;
-  createdAt: string;
-};
-
-const UserProfile = () => {
-  const router = useRouter();
-  const [userData, setUserData] = useState<UserData | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchUserData() {
-      try {
-        const response = await fetch('/api/user', {
-          credentials: 'include',
-        });
-        const data: UserData = await response.json();
-        // Debug
-        //console.warn('API Response in frontend:', data);
-        setUserData({
-          ...data,
-          workoutCount: data.workoutCount || 0,
-          createdAt: data.createdAt,
-        });
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchUserData();
-  }, []);
-
-
-  if (loading) {
-    return (
-      <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" color={colors.text} />
-      </View>
-    );
-  }
-
-  if (!userData) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Failed to load user data</Text>
-        <Button
-          title="Retry"
-          onPress={() => router.replace('/profile')}
-          color="#007aff"
-        />
-      </View>
-    );
-  }
-
-  const { username, workouts, createdAt, workoutCount } = userData;
-
-
-  return (
-    <View style={styles.container}>
-      <Image
-        source={{ uri: 'https://via.placeholder.com/100' }}
-        style={styles.profileImage}
-      />
-      <Text style={styles.name}>{username}</Text>
-
-      <View style={styles.statsContainer}>
-        <View style={styles.statBox}>
-          <Text style={styles.statNumber}>{userData.workoutCount || 0}</Text>
-          <Text style={styles.statLabel}>Workouts</Text>
-        </View>
-        <View style={styles.statBox}>
-        <Text style={styles.statNumber}>
-        {createdAt}
-</Text>
-
-          <Text style={styles.statLabel}>Account Created</Text>
-        </View>
-      </View>
-
-      <View style={styles.buttonContainer}>
-      <View style={styles.buttonWrapper}>
-          <Button title="Edit Profile" onPress={() => {}} color="#007aff" />
-        </View>
-        <View style={styles.buttonWrapper}>
-          <Button
-            title="Logout"
-            onPress={() => router.push('/(auth)/login')}
-            color="red"
-          />
-        </View>
-      </View>
-    </View>
-  );
-};
 
 const styles = StyleSheet.create({
   container: {
@@ -128,11 +30,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.text,
     marginBottom: 35,
-  },
-  email: {
-    fontSize: 16,
-    color: 'gray',
-    marginBottom: 20,
   },
   statsContainer: {
     flexDirection: 'row',
@@ -176,6 +73,155 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     fontSize: 16,
   },
+  textInput: {
+    borderBottomWidth: 1,
+    borderColor: 'gray',
+    color: colors.text,
+    marginBottom: 10,
+    width: '80%',
+    fontSize: 20,
+    textAlign: 'center',
+  },
 });
+
+type UserData = {
+  id: number;
+  username: string;
+  workouts: Array<any>;
+  workoutCount: number | null;
+  createdAt: string;
+};
+
+const UserProfile = () => {
+  const router = useRouter();
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [newUsername, setNewUsername] = useState('');
+
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        const response = await fetch('/api/user', {
+          credentials: 'include',
+        });
+        const data: UserData = await response.json();
+        setUserData({
+          ...data,
+          workoutCount: data.workoutCount || 0,
+          createdAt: data.createdAt,
+        });
+        setNewUsername(data.username); // Set initial username for editing
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchUserData();
+  }, []);
+
+  const handleSaveUsername = async () => {
+    try {
+      const response = await fetch('/api/user', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ username: newUsername }),
+      });
+
+      if (response.ok) {
+        const updatedUser = await response.json();
+        setUserData((prevData) =>
+          prevData
+            ? {
+                ...prevData,
+                username: updatedUser.username, // Ensure all other properties remain the same
+              }
+            : null
+        );
+        Alert.alert('Success', 'Username updated successfully!');
+        setIsEditing(false);
+      } else {
+        const errorData = await response.json();
+        Alert.alert('Error', errorData.error || 'Failed to update username.');
+      }
+    } catch (error) {
+      console.error('Error updating username:', error);
+      Alert.alert('Error', 'An error occurred while updating the username.');
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color={colors.text} />
+      </View>
+    );
+  }
+
+  if (!userData) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Failed to load user data</Text>
+        <Button
+          title="Retry"
+          onPress={() => router.replace('/profile')}
+          color="#007aff"
+        />
+      </View>
+    );
+  }
+
+  const { username, workouts, createdAt, workoutCount } = userData;
+
+  return (
+    <View style={styles.container}>
+      <Image
+        source={{ uri: 'https://via.placeholder.com/100' }}
+        style={styles.profileImage}
+      />
+      {isEditing ? (
+        <TextInput
+          value={newUsername}
+          onChangeText={setNewUsername}
+          placeholder="Enter new username"
+          style={styles.textInput}
+        />
+      ) : (
+        <Text style={styles.name}>{username}</Text>
+      )}
+
+      <View style={styles.statsContainer}>
+        <View style={styles.statBox}>
+          <Text style={styles.statNumber}>{workoutCount || 0}</Text>
+          <Text style={styles.statLabel}>Workouts</Text>
+        </View>
+        <View style={styles.statBox}>
+          <Text style={styles.statNumber}>{createdAt}</Text>
+          <Text style={styles.statLabel}>Account Created</Text>
+        </View>
+      </View>
+
+      <View style={styles.buttonContainer}>
+        <View style={styles.buttonWrapper}>
+          <Button
+            title={isEditing ? 'Save Username' : 'Edit Username'}
+            onPress={isEditing ? handleSaveUsername : () => setIsEditing(true)}
+            color="#007aff"
+          />
+        </View>
+        <View style={styles.buttonWrapper}>
+          <Button
+            title="Logout"
+            onPress={() => router.push('/(auth)/login')}
+            color="red"
+          />
+        </View>
+      </View>
+    </View>
+  );
+};
 
 export default UserProfile;
