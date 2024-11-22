@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import { colors } from '../../constants/colors';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 
 const styles = StyleSheet.create({
   container: {
@@ -88,7 +88,7 @@ type UserData = {
   id: number;
   username: string;
   workouts: Array<any>;
-  workoutCount: number | null;
+  workoutCount: number;
   createdAt: string;
 };
 
@@ -99,7 +99,8 @@ const UserProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [newUsername, setNewUsername] = useState('');
 
-  useEffect(() => {
+  useFocusEffect(
+  useCallback(() => {
     async function fetchUserData() {
       try {
         const response = await fetch('/api/user', {
@@ -108,10 +109,10 @@ const UserProfile = () => {
         const data: UserData = await response.json();
         setUserData({
           ...data,
-          workoutCount: data.workoutCount || 0,
+          workoutCount: data.workoutCount,
           createdAt: data.createdAt,
         });
-        setNewUsername(data.username); // Set initial username for editing
+        setNewUsername(data.username);
       } catch (error) {
         console.error('Error fetching user data:', error);
       } finally {
@@ -120,7 +121,8 @@ const UserProfile = () => {
     }
 
     fetchUserData();
-  }, []);
+  }, [])
+);
 
   const handleSaveUsername = async () => {
     try {
@@ -195,7 +197,7 @@ const UserProfile = () => {
 
       <View style={styles.statsContainer}>
         <View style={styles.statBox}>
-          <Text style={styles.statNumber}>{workoutCount || 0}</Text>
+          <Text style={styles.statNumber}>{userData.workoutCount}</Text>
           <Text style={styles.statLabel}>Workouts</Text>
         </View>
         <View style={styles.statBox}>

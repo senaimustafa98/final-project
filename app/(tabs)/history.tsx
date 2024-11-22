@@ -45,7 +45,7 @@ const WorkoutHistory = () => {
         throw new Error('Failed to fetch user');
       }
       const userData = await userResponse.json();
-      const userId = userData.id; // Replace `id` with the correct field from your API response
+      const userId = userData.id;
 
       // Fetch the user's workouts
       const workoutResponse = await fetch(`/api/workouts?user_id=${userId}`);
