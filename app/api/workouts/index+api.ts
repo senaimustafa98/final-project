@@ -44,6 +44,7 @@ export async function GET(
 
   return ExpoApiResponse.json({
     workouts,
+    workoutCount: user.workoutCount,
   });
 }
 
