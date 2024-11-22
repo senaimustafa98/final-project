@@ -24,6 +24,3 @@ export async function up(sql: Sql) {
 export async function down(sql: Sql) {
   await sql`DROP TABLE workouts`;
 }
-
-
-//PGHOST=localhost PGDATABASE=workout_tracker PGUSER=workoutapp PGPASSWORD=workoutapp pnpm migrate up
