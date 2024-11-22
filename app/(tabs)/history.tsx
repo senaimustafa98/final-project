@@ -163,6 +163,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'white',
     marginBottom: 20,
+    textAlign: 'center',
   },
   scrollContainer: { paddingBottom: 20 },
   workoutItem: {

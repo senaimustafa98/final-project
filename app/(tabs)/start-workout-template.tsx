@@ -55,7 +55,7 @@ const StartWorkoutTemplate = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Workout History</Text>
+      <Text style={styles.header}>Workout Templates</Text>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {workoutData.map((workout, index) => (
           <View key={index} style={styles.workoutItem}>

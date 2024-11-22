@@ -51,7 +51,7 @@ const StartWorkout = () => {
     async function fetchExercises() {
       try {
         setLoading(true);
-        const response = await fetch('https://exercisedb.p.rapidapi.com/exercises?limit=20', {
+        const response = await fetch('https://exercisedb.p.rapidapi.com/exercises?limit=10', {
           method: 'GET',
           headers: {
             'x-rapidapi-host': 'exercisedb.p.rapidapi.com',
@@ -61,7 +61,7 @@ const StartWorkout = () => {
         const data = await response.json();
 
          // Log the fetched exercises
-        console.log('Fetched exercises:', data);
+        //console.log('Fetched exercises:', data);
 
 
         setExercises(data); // Save exercises data
