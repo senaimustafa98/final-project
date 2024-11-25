@@ -1,5 +1,8 @@
 import { parse } from 'cookie';
-import { getUserWithWorkoutCount, updateUsernameInDB } from '../../database/users';
+import {
+  getUserWithWorkoutCount,
+  updateUsernameInDB,
+} from '../../database/users';
 import { ExpoApiResponse } from '../../util/ExpoApiResponse';
 import type { User } from '../../migrations/001_create_users_table';
 
@@ -39,7 +42,6 @@ export async function GET(
   });
 }
 
-// PATCH method to update username
 export async function PATCH(
   request: Request,
 ): Promise<ExpoApiResponse<{ username: string } | { error: string }>> {
@@ -47,20 +49,25 @@ export async function PATCH(
   const token = cookies.sessionToken;
 
   if (!token) {
-    return ExpoApiResponse.json({ error: 'No session token found' }, { status: 401 });
+    return ExpoApiResponse.json(
+      { error: 'No session token found' },
+      { status: 401 },
+    );
   }
 
   const user = token && (await getUserWithWorkoutCount(token));
 
   if (!user) {
-    return ExpoApiResponse.json({ error: 'User not authenticated' }, { status: 403 });
+    return ExpoApiResponse.json(
+      { error: 'User not authenticated' },
+      { status: 403 },
+    );
   }
 
   try {
     const body = await request.json();
     const { username } = body;
 
-    // Validate new username
     if (!username || username.length < 3 || username.length > 20) {
       return ExpoApiResponse.json(
         { error: 'Invalid username. Must be 3-20 characters long.' },
@@ -68,7 +75,6 @@ export async function PATCH(
       );
     }
 
-    // Update username in the database
     const updated = await updateUsernameInDB(user.id, username);
 
     if (!updated) {
@@ -81,6 +87,9 @@ export async function PATCH(
     return ExpoApiResponse.json({ username });
   } catch (error) {
     console.error('Error updating username:', error);
-    return ExpoApiResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return ExpoApiResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 },
+    );
   }
 }

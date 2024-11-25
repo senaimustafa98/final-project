@@ -1,12 +1,11 @@
 import type { Sql } from 'postgres';
 import { z } from 'zod';
 
-// Corrected schema for consistency with the database
 export const workoutSchema = z.object({
   title: z.string(),
-  createdAt: z.coerce.date().optional(), // Match `created_at` in the table
+  createdAt: z.coerce.date().optional(),
   duration: z.string().optional(),
-  userId: z.number().optional(), // Match `user_id` in the table
+  userId: z.number().optional(),
 });
 
 export async function up(sql: Sql) {

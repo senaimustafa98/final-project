@@ -8,7 +8,6 @@ declare namespace globalThis {
   let postgresSqlClient: Sql;
 }
 
-// Connect only once to the database
 function connectOneTimeToDatabase() {
   if (!('postgresSqlClient' in globalThis)) {
     globalThis.postgresSqlClient = postgres(postgresConfig);
@@ -17,5 +16,4 @@ function connectOneTimeToDatabase() {
   return globalThis.postgresSqlClient;
 }
 
-// Connect to PostgreSQL
 export const sql = connectOneTimeToDatabase();

@@ -17,7 +17,6 @@ type Workout = {
   }[];
 };
 
-// Placeholder workout data
 const workoutData: Workout[] = [
   {
     date: 'June 12, 2023',
@@ -41,7 +40,6 @@ const workoutData: Workout[] = [
       { name: 'Deadlift', sets: [{ reps: 6, weight: 80 }] },
     ],
   },
-  // Additional placeholder workouts...
 ];
 
 const StartWorkoutTemplate = () => {

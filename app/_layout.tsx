@@ -2,11 +2,9 @@ import React from 'react';
 import { Tabs, useSegments } from 'expo-router';
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 
-
 export default function RootLayout() {
   const segments = useSegments();
 
-  // Hide the tab bar on auth screen
   const isAuthScreen = segments[0] === '(auth)';
 
   return (

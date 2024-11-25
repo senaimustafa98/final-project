@@ -37,7 +37,6 @@ const WorkoutHistory = () => {
   const fetchWorkoutsForUser = useCallback(async () => {
     setLoading(true);
     try {
-      // Fetch the current user
       const userResponse = await fetch('/api/user+api.ts', {
         credentials: 'include',
       });
@@ -47,7 +46,6 @@ const WorkoutHistory = () => {
       const userData = await userResponse.json();
       const userId = userData.id;
 
-      // Fetch the user's workouts
       const workoutResponse = await fetch(`/api/workouts?user_id=${userId}`);
       if (!workoutResponse.ok) {
         throw new Error('Failed to fetch workouts');

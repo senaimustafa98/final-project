@@ -28,7 +28,9 @@ const StartWorkout = () => {
   const [isRunning, setIsRunning] = useState(false);
   const [workoutTitle, setWorkoutTitle] = useState('My Workout');
   const [showExerciseList, setShowExerciseList] = useState(false);
-  const [selectedExercises, setSelectedExercises] = useState<SelectedExercise[]>([]);
+  const [selectedExercises, setSelectedExercises] = useState<
+    SelectedExercise[]
+  >([]);
   const [exercises, setExercises] = useState<any[]>([]);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -48,23 +50,37 @@ const StartWorkout = () => {
       }
     }
 
+    const apiKey = process.env.EXPO_PUBLIC_API_KEY;
+
     async function fetchExercises() {
+      if (!apiKey) {
+        console.error('API key is missing or undefined.');
+        return;
+      }
+
       try {
         setLoading(true);
-        const response = await fetch('https://exercisedb.p.rapidapi.com/exercises?limit=10', {
-          method: 'GET',
-          headers: {
-            'x-rapidapi-host': 'exercisedb.p.rapidapi.com',
-            'x-rapidapi-key': '013ceceb96msh45a7b1f9e468beap1e9cc3jsn62455b38ada3',
-          },
+
+        const headers: HeadersInit = new Headers({
+          'x-rapidapi-host': 'exercisedb.p.rapidapi.com',
+          'x-rapidapi-key': apiKey,
         });
+
+        const response = await fetch(
+          'https://exercisedb.p.rapidapi.com/exercises?limit=10',
+          {
+            method: 'GET',
+            headers: headers,
+          },
+        );
+
+        if (!response.ok) {
+          throw new Error(`Error fetching exercises: ${response.statusText}`);
+        }
+
         const data = await response.json();
-
-         // Log the fetched exercises
-        //console.log('Fetched exercises:', data);
-
-
-        setExercises(data); // Save exercises data
+        console.log('Fetched exercises:', data);
+        setExercises(data);
       } catch (error) {
         console.error('Error fetching exercises from API:', error);
       } finally {
@@ -75,6 +91,9 @@ const StartWorkout = () => {
     fetchUserId();
     fetchExercises();
   }, []);
+
+  console.log('All ENV Variables:', process.env);
+  console.log('EXPO_EXERCISE_DB_API_KEY:', process.env.EXPO_PUBLIC_API_KEY);
 
   useEffect(() => {
     if (isRunning) {
@@ -112,7 +131,7 @@ const StartWorkout = () => {
 
   const handleRemoveExercise = (index: number) => {
     setSelectedExercises((prevExercises) =>
-      prevExercises.filter((_, i) => i !== index)
+      prevExercises.filter((_, i) => i !== index),
     );
   };
 
@@ -121,8 +140,8 @@ const StartWorkout = () => {
       prevExercises.map((exercise, i) =>
         i === exerciseIndex
           ? { ...exercise, sets: [...exercise.sets, { reps: 0, weight: 0 }] }
-          : exercise
-      )
+          : exercise,
+      ),
     );
   };
 
@@ -130,7 +149,7 @@ const StartWorkout = () => {
     exerciseIndex: number,
     setIndex: number,
     field: 'reps' | 'weight',
-    value: number
+    value: number,
   ) => {
     setSelectedExercises((prevExercises) =>
       prevExercises.map((exercise, i) =>
@@ -138,11 +157,11 @@ const StartWorkout = () => {
           ? {
               ...exercise,
               sets: exercise.sets.map((set, j) =>
-                j === setIndex ? { ...set, [field]: value } : set
+                j === setIndex ? { ...set, [field]: value } : set,
               ),
             }
-          : exercise
-      )
+          : exercise,
+      ),
     );
   };
 
@@ -154,12 +173,10 @@ const StartWorkout = () => {
               ...exercise,
               sets: exercise.sets.filter((_, j) => j !== setIndex),
             }
-          : exercise
-      )
+          : exercise,
+      ),
     );
   };
-
-  // Save workout to backend
   const saveWorkout = async () => {
     if (!currentUserId) {
       alert('User ID is missing. Please try again.');
@@ -216,7 +233,9 @@ const StartWorkout = () => {
             placeholder="Enter Workout Title"
           />
           <TouchableOpacity onPress={saveWorkout} disabled={saving}>
-            <Text style={styles.saveButtonText}>{saving ? 'Saving...' : 'Save'}</Text>
+            <Text style={styles.saveButtonText}>
+              {saving ? 'Saving...' : 'Save'}
+            </Text>
           </TouchableOpacity>
         </View>
         <View style={styles.buttonContainer}>
@@ -265,7 +284,12 @@ const StartWorkout = () => {
                       keyboardType="numeric"
                       value={set.weight.toString()}
                       onChangeText={(value) =>
-                        handleSetChange(exerciseIndex, setIndex, 'weight', parseInt(value) || 0)
+                        handleSetChange(
+                          exerciseIndex,
+                          setIndex,
+                          'weight',
+                          parseInt(value) || 0,
+                        )
                       }
                     />
                     <TextInput
@@ -274,7 +298,12 @@ const StartWorkout = () => {
                       keyboardType="numeric"
                       value={set.reps.toString()}
                       onChangeText={(value) =>
-                        handleSetChange(exerciseIndex, setIndex, 'reps', parseInt(value) || 0)
+                        handleSetChange(
+                          exerciseIndex,
+                          setIndex,
+                          'reps',
+                          parseInt(value) || 0,
+                        )
                       }
                     />
                   </View>
@@ -289,7 +318,9 @@ const StartWorkout = () => {
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.removeSetButton}
-                    onPress={() => handleRemoveSet(exerciseIndex, exercise.sets.length - 1)}
+                    onPress={() =>
+                      handleRemoveSet(exerciseIndex, exercise.sets.length - 1)
+                    }
                   >
                     <Text style={styles.buttonText}>Remove Set</Text>
                   </TouchableOpacity>
@@ -307,7 +338,11 @@ const StartWorkout = () => {
         <Text style={styles.buttonText}>Add Exercise</Text>
       </TouchableOpacity>
 
-      <Modal visible={showExerciseList} animationType="slide" transparent={true}>
+      <Modal
+        visible={showExerciseList}
+        animationType="slide"
+        transparent={true}
+      >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Select an Exercise</Text>
@@ -326,7 +361,7 @@ const StartWorkout = () => {
                   </TouchableOpacity>
                 )}
                 showsVerticalScrollIndicator={true}
-  contentContainerStyle={{ paddingBottom: 100 }}
+                contentContainerStyle={{ paddingBottom: 100 }}
               />
             )}
             <TouchableOpacity onPress={() => setShowExerciseList(false)}>
@@ -352,7 +387,12 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
     width: '30%',
   },
-  buttonText: { fontSize: 12, fontWeight: 'bold', color: 'white', textAlign: 'center' },
+  buttonText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+  },
   scrollContainer: {
     paddingHorizontal: 20,
     alignItems: 'center',
@@ -475,7 +515,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
-
 });
 
 export default StartWorkout;

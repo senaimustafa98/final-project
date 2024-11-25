@@ -21,7 +21,6 @@ export type Workout = {
   }[];
 };
 
-// Fetch all workouts for a specific user, including exercises
 export async function getWorkouts(userId: number): Promise<Workout[]> {
   try {
     const workouts = await sql<Workout[]>`
@@ -40,19 +39,24 @@ export async function getWorkouts(userId: number): Promise<Workout[]> {
     const result = await Promise.all(
       workouts.map(async (workout) => {
         const exercises = await getExercisesByWorkoutId(workout.id);
-        // Group exercises by name and transform into the expected structure
-        const groupedExercises = exercises.reduce((acc, exercise) => {
-          const existing = acc.find((e) => e.name === exercise.name);
-          if (existing) {
-            existing.sets.push({ reps: exercise.reps, weight: exercise.weight });
-          } else {
-            acc.push({
-              name: exercise.name,
-              sets: [{ reps: exercise.reps, weight: exercise.weight }],
-            });
-          }
-          return acc;
-        }, [] as Workout['exercises']);
+        const groupedExercises = exercises.reduce(
+          (acc, exercise) => {
+            const existing = acc.find((e) => e.name === exercise.name);
+            if (existing) {
+              existing.sets.push({
+                reps: exercise.reps,
+                weight: exercise.weight,
+              });
+            } else {
+              acc.push({
+                name: exercise.name,
+                sets: [{ reps: exercise.reps, weight: exercise.weight }],
+              });
+            }
+            return acc;
+          },
+          [] as Workout['exercises'],
+        );
         return {
           ...workout,
           exercises: groupedExercises,
@@ -67,7 +71,6 @@ export async function getWorkouts(userId: number): Promise<Workout[]> {
   }
 }
 
-// Create a new workout and insert related exercises
 export async function createWorkout(
   title: string,
   duration: string | null,
@@ -80,7 +83,11 @@ export async function createWorkout(
       INSERT INTO
         workouts (title, duration, user_id)
       VALUES
-        (${title}, ${duration}, ${userId})
+        (
+          ${title},
+          ${duration},
+          ${userId}
+        )
       RETURNING
         id,
         title,
@@ -94,14 +101,25 @@ export async function createWorkout(
       return null;
     }
 
-    // Insert exercises related to this workout
     for (let exercise of exercises) {
       for (let [index, set] of exercise.sets.entries()) {
         await sql`
           INSERT INTO
-            exercises (workout_id, name, set_number, reps, weight)
+            exercises (
+              workout_id,
+              name,
+              set_number,
+              reps,
+              weight
+            )
           VALUES
-            (${workout.id}, ${exercise.name}, ${index + 1}, ${set.reps}, ${set.weight});
+            (
+              ${workout.id},
+              ${exercise.name},
+              ${index + 1},
+              ${set.reps},
+              ${set.weight}
+            );
         `;
       }
     }
@@ -119,7 +137,6 @@ export async function createWorkout(
   }
 }
 
-// Fetch exercises associated with a specific workout ID
 export async function getExercisesByWorkoutId(
   workoutId: number,
 ): Promise<Exercise[]> {
@@ -140,7 +157,6 @@ export async function getExercisesByWorkoutId(
         set_number ASC;
     `;
 
-    // Ensure all exercises include sets
     return exercises.map((exercise) => ({
       ...exercise,
       sets: [{ reps: exercise.reps, weight: exercise.weight }],

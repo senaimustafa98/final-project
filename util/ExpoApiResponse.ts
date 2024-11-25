@@ -1,7 +1,3 @@
-// Copy future implementation of Expo API Routes response type, proposed here:
-// https://github.com/expo/expo/issues/30521
-//
-// TODO: Switch from this to official Expo API response type when available
 const internals = Symbol('internal response');
 
 export class ExpoApiResponse<Body = unknown> extends Response {

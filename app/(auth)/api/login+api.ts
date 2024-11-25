@@ -16,10 +16,7 @@ export type LoginResponseBodyPost =
 export async function POST(
   request: Request,
 ): Promise<ExpoApiResponse<LoginResponseBodyPost>> {
-  // Task: Implement the user login workflow with session
-  // 1. Get the user data from the request
   const requestBody = await request.json();
-  // 2. Validate the user data with zod
   const result = userSchema.safeParse(requestBody);
   if (!result.success) {
     return ExpoApiResponse.json(
@@ -32,7 +29,6 @@ export async function POST(
       },
     );
   }
-  // 3. Verify the user credentials
   const userWithPasswordHash = await getUserWithPasswordHashInsecure(
     result.data.username,
   );
@@ -46,7 +42,6 @@ export async function POST(
       },
     );
   }
-  // 4. Validate the user password by comparing with hashed password
   const passwordHash = await bcryptJs.compare(
     result.data.password,
     userWithPasswordHash.passwordHash,
@@ -61,9 +56,7 @@ export async function POST(
       },
     );
   }
-  // 6. Create a token
   const token = crypto.randomBytes(100).toString('base64');
-  // 7. Create the session record
   const session = await createSessionInsecure(token, userWithPasswordHash.id);
   if (!session) {
     return ExpoApiResponse.json(
@@ -85,7 +78,6 @@ export async function POST(
       },
     },
     {
-      // 8. Send the new cookie in the headers
       headers: {
         'Set-Cookie': serializedCookie,
       },

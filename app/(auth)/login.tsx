@@ -53,7 +53,6 @@ const Login = () => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
 
-  // Check if the user is already logged in
   useFocusEffect(
     useCallback(() => {
       async function checkSession() {
@@ -62,9 +61,8 @@ const Login = () => {
           const responseBody = await response.json();
 
           if (response.ok && 'username' in responseBody) {
-            // Redirect to the original route or fallback
             if (returnTo && typeof returnTo === 'string') {
-              router.replace('/(auth)'); // Redirect to index.tsx
+              router.replace('/(auth)');
             }
           }
         } catch (error) {
@@ -76,7 +74,6 @@ const Login = () => {
     }, [returnTo]),
   );
 
-  // Handle user login
   const handleLogin = async () => {
     if (!username || !password) {
       Alert.alert('Please enter both username and password');
@@ -95,7 +92,6 @@ const Login = () => {
       const result = await response.json();
 
       if (response.ok) {
-        // Clear inputs and redirect after successful login
         setUsername('');
         setPassword('');
         if (returnTo && typeof returnTo === 'string') {

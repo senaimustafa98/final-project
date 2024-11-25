@@ -13,7 +13,6 @@ export type LogoutResponseBodyGet =
 export async function GET(
   request: Request,
 ): Promise<ExpoApiResponse<LogoutResponseBodyGet>> {
-  // 1. Get the session token from the cookie
   const cookies = parse(request.headers.get('cookie') || '');
   const token = cookies.sessionToken;
   if (!token) {
@@ -26,7 +25,6 @@ export async function GET(
       },
     );
   }
-  // 2. Delete the session from the database based on the token
   const session = await deleteSession(token);
   if (!session) {
     return ExpoApiResponse.json(

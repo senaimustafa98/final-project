@@ -100,29 +100,29 @@ const UserProfile = () => {
   const [newUsername, setNewUsername] = useState('');
 
   useFocusEffect(
-  useCallback(() => {
-    async function fetchUserData() {
-      try {
-        const response = await fetch('/api/user', {
-          credentials: 'include',
-        });
-        const data: UserData = await response.json();
-        setUserData({
-          ...data,
-          workoutCount: data.workoutCount,
-          createdAt: data.createdAt,
-        });
-        setNewUsername(data.username);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-      } finally {
-        setLoading(false);
+    useCallback(() => {
+      async function fetchUserData() {
+        try {
+          const response = await fetch('/api/user', {
+            credentials: 'include',
+          });
+          const data: UserData = await response.json();
+          setUserData({
+            ...data,
+            workoutCount: data.workoutCount,
+            createdAt: data.createdAt,
+          });
+          setNewUsername(data.username);
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+        } finally {
+          setLoading(false);
+        }
       }
-    }
 
-    fetchUserData();
-  }, [])
-);
+      fetchUserData();
+    }, []),
+  );
 
   const handleSaveUsername = async () => {
     try {
@@ -139,9 +139,9 @@ const UserProfile = () => {
           prevData
             ? {
                 ...prevData,
-                username: updatedUser.username, // Ensure all other properties remain the same
+                username: updatedUser.username,
               }
-            : null
+            : null,
         );
         Alert.alert('Success', 'Username updated successfully!');
         setIsEditing(false);
