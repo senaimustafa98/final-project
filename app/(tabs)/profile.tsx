@@ -22,8 +22,9 @@ const styles = StyleSheet.create({
   profileImage: {
     width: 100,
     height: 100,
-    borderRadius: 50,
     marginBottom: 20,
+    borderRadius: 50,
+    overflow: 'hidden',
   },
   name: {
     fontSize: 24,
@@ -181,8 +182,9 @@ const UserProfile = () => {
   return (
     <View style={styles.container}>
       <Image
-        source={{ uri: 'https://via.placeholder.com/100' }}
+        source={require('../../assets/generic.jpg')}
         style={styles.profileImage}
+        resizeMode="cover"
       />
       {isEditing ? (
         <TextInput

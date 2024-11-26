@@ -19,7 +19,7 @@ type Workout = {
 
 const workoutData: Workout[] = [
   {
-    date: 'June 12, 2023',
+    date: 'June 12, 2024',
     type: 'Full Body',
     duration: '60 mins',
     exercises: [
@@ -38,6 +38,28 @@ const workoutData: Workout[] = [
         ],
       },
       { name: 'Deadlift', sets: [{ reps: 6, weight: 80 }] },
+    ],
+  },
+  {
+    date: 'June 14, 2024',
+    type: 'Upper Body',
+    duration: '72 mins',
+    exercises: [
+      {
+        name: 'Shoulder press',
+        sets: [
+          { reps: 10, weight: 50 },
+          { reps: 8, weight: 60 },
+        ],
+      },
+      {
+        name: 'Bench Press',
+        sets: [
+          { reps: 10, weight: 40 },
+          { reps: 8, weight: 45 },
+        ],
+      },
+      { name: 'Pull ups', sets: [{ reps: 6, weight: 0 }] },
     ],
   },
 ];

@@ -67,7 +67,7 @@ const StartWorkout = () => {
         });
 
         const response = await fetch(
-          'https://exercisedb.p.rapidapi.com/exercises?limit=10',
+          'https://exercisedb.p.rapidapi.com/exercises?limit=15',
           {
             method: 'GET',
             headers: headers,
@@ -79,7 +79,6 @@ const StartWorkout = () => {
         }
 
         const data = await response.json();
-        console.log('Fetched exercises:', data);
         setExercises(data);
       } catch (error) {
         console.error('Error fetching exercises from API:', error);
@@ -91,9 +90,6 @@ const StartWorkout = () => {
     fetchUserId();
     fetchExercises();
   }, []);
-
-  console.log('All ENV Variables:', process.env);
-  console.log('EXPO_EXERCISE_DB_API_KEY:', process.env.EXPO_PUBLIC_API_KEY);
 
   useEffect(() => {
     if (isRunning) {
@@ -475,20 +471,22 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     width: '80%',
+    height: '60%',
     padding: 10,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#525259',
     borderRadius: 10,
+    elevation: 5,
   },
-  modalTitle: { fontSize: 20, fontWeight: 'bold' },
+  modalTitle: { fontSize: 20, fontWeight: 'bold', color: 'skyblue' },
   exerciseItem: {
     padding: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#ccc',
+    borderBottomColor: '#444',
   },
-  exerciseItemText: { fontSize: 18 },
+  exerciseItemText: { fontSize: 18, color: 'white' },
   closeButton: {
     marginTop: 10,
-    color: 'blue',
+    color: 'skyblue',
     textAlign: 'center',
     fontSize: 16,
   },
