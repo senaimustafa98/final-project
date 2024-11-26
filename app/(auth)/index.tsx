@@ -1,12 +1,24 @@
 import React from 'react';
-import { View, Text, StyleSheet, StatusBar, SafeAreaView } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  StatusBar,
+  SafeAreaView,
+  Image,
+} from 'react-native';
 import { Link } from 'expo-router';
 
 export default function Home() {
   return (
     <SafeAreaView style={styles.fullScreenContainer}>
       <View style={styles.container}>
-        <Text style={styles.title}>Welcome to 1MoreRep</Text>
+        <Text style={styles.title}>Welcome to</Text>
+        <Image
+          source={require('../../assets/1morerep.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Link href="/login" style={styles.buttonLink}>
           <Text style={styles.buttonText}>Login</Text>
         </Link>
@@ -30,11 +42,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
   },
+  logo: {
+    width: 250,
+    height: 100,
+    marginBottom: 40,
+    marginTop: 0,
+  },
   title: {
     fontSize: 30,
     fontWeight: 'bold',
     color: '#ffffff',
-    marginBottom: 40,
     textAlign: 'center',
   },
   buttonLink: {
