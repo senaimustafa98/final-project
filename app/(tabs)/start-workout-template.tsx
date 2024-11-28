@@ -106,6 +106,8 @@ const StartWorkoutTemplate = () => {
                     ))}
                   </View>
                 ))}
+                <TouchableOpacity style={styles.button}>
+                  <Text style={styles.startText}>Start workout</Text></TouchableOpacity>
               </View>
             )}
           </View>
@@ -122,6 +124,15 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'white',
     marginBottom: 20,
+    marginTop: 50,
+  },
+  button: {
+    backgroundColor: 'skyblue',
+    padding: 8,
+    borderRadius: 5,
+    marginHorizontal: 5,
+    width: '50%',
+    marginTop: 20,
   },
   scrollContainer: { paddingBottom: 20 },
   workoutItem: {
@@ -142,6 +153,7 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   setText: { color: 'white', fontSize: 12 },
+  startText: {textAlign: 'center', color: 'white'},
 });
 
 export default StartWorkoutTemplate;

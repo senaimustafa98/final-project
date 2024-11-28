@@ -159,8 +159,9 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: 'white',
+    color: 'skyblue',
     marginBottom: 20,
+    marginTop: 50,
     textAlign: 'center',
   },
   scrollContainer: { paddingBottom: 20 },
